@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>King's Gardens — Staff Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#2d6a4f;--green-mid:#52b788;--green-pale:#d8f3dc;
+  --amber:#e9c46a;--amber-dark:#856404;
+  --red:#c0392b;--red-pale:#fce8ea;
+  --blue:#1d6e8a;--blue-pale:#e8f4f8;
+  --text:#1a2e22;--text-mid:#4a6555;--text-muted:#8aab96;
+  --border:#cde0d4;--surface:#f7fbf8;--white:#ffffff;
+  --font:'DM Sans',system-ui,sans-serif;--mono:'DM Mono',monospace;
+}
+html,body{font-family:var(--font);background:var(--surface);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
+
+/* HEADER */
+.header{background:var(--white);border-bottom:1.5px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.header-left{display:flex;align-items:center;gap:12px}
+.logo-mark{width:40px;height:40px;background:var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.header-title{font-size:20px;font-weight:600;letter-spacing:-.3px}
+.header-sub{font-size:12px;color:var(--text-muted)}
+.clock{font-family:var(--mono);font-size:24px;font-weight:500;color:var(--green);letter-spacing:1px}
+.date-line{font-size:12px;color:var(--text-mid);margin-top:1px;text-align:right}
+
+/* GRID */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:16px 20px;max-width:1600px;margin:0 auto}
+.span2{grid-column:span 2}
+.span3{grid-column:span 3}
+
+/* CARD */
+.card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:16px 18px;box-shadow:0 1px 4px rgba(30,60,40,.06)}
+.card-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;margin-bottom:12px;border-bottom:1px solid var(--border)}
+.card-title{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-muted)}
+.badge{font-size:10px;font-weight:600;padding:2px 9px;border-radius:20px;white-space:nowrap}
+.badge-live{background:var(--green-pale);color:var(--green)}
+.badge-blue{background:var(--blue-pale);color:var(--blue)}
+.badge-red{background:var(--red-pale);color:var(--red)}
+
+/* INPUTS */
+input,textarea,select{font-family:var(--font);font-size:13px;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:6px 10px;outline:none;transition:border-color .15s}
+input:focus,textarea:focus,select:focus{border-color:var(--green-mid)}
+button{font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;border:none;border-radius:7px;padding:7px 14px;transition:opacity .15s}
+button:hover{opacity:.85}
+.btn-green{background:var(--green);color:#fff}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-ghost{background:var(--green-pale);color:var(--green)}
+
+/* ALERT CARD */
+@keyframes alertPulse{0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,0)}50%{box-shadow:0 0 0 12px rgba(192,57,43,.2)}}
+.alert-card{grid-column:span 3;border-radius:14px;overflow:hidden}
+.alert-card.pulse{animation:alertPulse 2.5s ease-in-out infinite}
+.alert-top{padding:16px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.alert-top-left{display:flex;align-items:center;gap:14px}
+.alert-icon-big{font-size:36px;line-height:1;flex-shrink:0}
+.alert-event{font-size:22px;font-weight:700;color:#fff;letter-spacing:.4px;line-height:1.2}
+.alert-source{font-size:12px;color:rgba(255,255,255,.65);margin-top:4px}
+.alert-low-pill{border-radius:10px;padding:10px 20px;text-align:center;flex-shrink:0;background:rgba(0,0,0,.25)}
+.alert-low-label{font-size:10px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.8px}
+.alert-low-temp{font-size:32px;font-weight:300;color:#fff;line-height:1.15}
+.alert-body{padding:0 22px 18px}
+.alert-divider{height:1px;background:rgba(255,255,255,.12);margin-bottom:14px}
+.alert-headline{font-size:15px;font-weight:500;color:rgba(255,255,255,.94);line-height:1.55;margin-bottom:8px}
+.alert-desc{font-size:12px;color:rgba(255,255,255,.62);line-height:1.7;margin-bottom:14px}
+.alert-tags{display:flex;gap:8px;flex-wrap:wrap}
+.alert-tag{background:rgba(255,255,255,.13);color:rgba(255,255,255,.88);border-radius:20px;padding:4px 13px;font-size:11px;font-weight:600}
+
+/* COMMENT CARD */
+.comment-card{grid-column:span 3;background:var(--white);border:2px solid #e8b4b8;border-radius:14px;padding:16px 18px;box-shadow:0 1px 6px rgba(192,57,43,.08)}
+.comment-list{display:flex;flex-direction:column;gap:7px;margin-bottom:12px;max-height:200px;overflow-y:auto}
+.comment-item{border-left:3px solid var(--green-mid);border-radius:0 8px 8px 0;background:var(--surface);padding:8px 12px}
+.comment-meta{font-size:11px;color:var(--text-muted);margin-bottom:3px}
+.comment-body{font-size:13px;color:var(--text);line-height:1.55}
+.comment-input-row{display:flex;gap:8px;align-items:flex-end;margin-top:8px}
+.comment-input-row textarea{flex:1;min-height:56px;resize:none}
+
+/* GREENHOUSE WARNING CARD */
+@keyframes ghPulse{0%,100%{box-shadow:0 0 0 0 rgba(180,130,0,0)}50%{box-shadow:0 0 0 14px rgba(180,130,0,.22)}}
+.gh-card{grid-column:span 3;border-radius:14px;overflow:hidden;background:#7a5c00;border:2.5px solid #c49a00;animation:ghPulse 2.5s ease-in-out infinite}
+.gh-top{background:#c49a00;padding:18px 26px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.gh-top-left{display:flex;align-items:center;gap:16px}
+.gh-icon{font-size:40px;line-height:1;flex-shrink:0}
+.gh-headline{font-size:26px;font-weight:700;color:#1a1000;letter-spacing:.5px;line-height:1.1}
+.gh-sub{font-size:13px;color:rgba(0,0,0,.55);margin-top:4px;font-weight:500}
+.gh-body{padding:14px 26px 18px}
+.gh-divider{height:1px;background:rgba(255,255,255,.15);margin-bottom:14px}
+.gh-reasons{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.gh-reason{background:rgba(255,255,255,.15);color:#fff3cc;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600}
+.gh-note{font-size:12px;color:rgba(255,255,255,.55);line-height:1.6}
+
+/* NWS WEATHER */
+.wx-top{display:flex;align-items:flex-start;gap:16px;margin-bottom:12px}
+.wx-temp{font-size:54px;font-weight:300;line-height:1;letter-spacing:-3px}
+.wx-temp sup{font-size:22px;font-weight:400;vertical-align:super;color:var(--text-muted)}
+.wx-desc{font-size:14px;color:var(--text-mid);margin-top:5px}
+.wx-note{font-size:12px;color:var(--text-muted);margin-top:2px}
+.wx-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.stat-box{background:var(--surface);border-radius:8px;padding:8px 10px}
+.stat-label{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted)}
+.stat-val{font-size:17px;font-weight:500;margin-top:2px}
+.stat-sub{font-size:11px;color:var(--text-mid);margin-top:1px}
+.forecast-strip{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.fc-day{flex:1;min-width:50px;background:var(--surface);border-radius:8px;padding:6px 4px;text-align:center}
+.fc-name{font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
+.fc-icon{font-size:18px;margin:3px 0;line-height:1}
+.fc-hi{font-size:13px;font-weight:500}
+.fc-cond{font-size:10px;color:var(--text-muted);margin-top:1px}
+
+/* STATION */
+.st-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.st-box{background:var(--blue-pale);border-radius:8px;padding:9px 11px}
+.st-label{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--blue)}
+.st-val{font-size:20px;font-weight:500;color:#1d3557;margin-top:2px}
+.st-sub{font-size:11px;color:#457b9d;margin-top:1px}
+.key-row{display:flex;gap:6px;align-items:center;margin-top:8px}
+.key-row label{font-size:11px;color:var(--text-muted);white-space:nowrap;flex-shrink:0}
+.key-row input{flex:1}
+.manual-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.manual-row input{width:72px}
+.st-status{font-size:11px;color:var(--text-muted);margin-top:5px;min-height:16px}
+
+/* MESSAGE */
+.msg-body{background:var(--surface);border-radius:8px;padding:10px 12px;font-size:14px;line-height:1.65;min-height:56px;white-space:pre-wrap;margin-bottom:10px}
+.msg-edit{display:flex;gap:8px;align-items:flex-start}
+.msg-edit textarea{flex:1;min-height:60px;resize:vertical}
+.msg-ts{font-size:10px;color:var(--text-muted)}
+
+/* CALENDAR */
+.cal-wrap{display:flex;gap:16px}
+.cal-left{flex-shrink:0}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.cal-nav-btn{width:24px;height:24px;border:1px solid var(--border);background:var(--surface);border-radius:6px;font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--text-mid);padding:0;cursor:pointer}
+.cal-nav-btn:hover{background:var(--green-pale)}
+.cal-month-lbl{font-size:13px;font-weight:600}
+.cal-grid{display:grid;grid-template-columns:repeat(7,28px);gap:2px}
+.cal-dow{font-size:9px;font-weight:700;text-align:center;color:var(--text-muted);text-transform:uppercase;padding:2px 0}
+.cal-day{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-mid);cursor:pointer;position:relative;user-select:none}
+.cal-day:hover{background:var(--green-pale)}
+.cal-day.today{background:var(--green);color:#fff;font-weight:700}
+.cal-day.selected:not(.today){background:var(--green-pale);color:var(--green);font-weight:600}
+.cal-day.has-event::after{content:'';position:absolute;bottom:3px;width:4px;height:4px;border-radius:50%;background:var(--amber)}
+.cal-day.today.has-event::after{background:rgba(255,255,255,.8)}
+.cal-right{flex:1;display:flex;flex-direction:column}
+.cal-date-lbl{font-size:13px;font-weight:600;margin-bottom:8px}
+.event-list{flex:1;display:flex;flex-direction:column;gap:5px;margin-bottom:8px;max-height:150px;overflow-y:auto}
+.event-item{display:flex;align-items:center;gap:8px;background:var(--surface);border-radius:7px;padding:6px 9px;font-size:12px}
+.ev-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-delivery{background:var(--blue)}
+.dot-vendor{background:var(--amber)}
+.dot-misc{background:var(--green-mid)}
+.ev-name{font-weight:500;flex:1}
+.ev-time{font-size:11px;color:var(--text-muted)}
+.ev-del{cursor:pointer;color:var(--text-muted);font-size:13px;padding:0 2px}
+.ev-del:hover{color:var(--red)}
+.event-add{display:flex;gap:5px;flex-wrap:wrap}
+.event-add input,.event-add select{font-size:12px;padding:5px 8px}
+.event-add .ev-name-in{flex:1;min-width:90px}
+.event-add .ev-time-in{width:76px}
+.event-add select{width:110px}
+
+/* FOOTER */
+.footer{text-align:center;font-size:11px;color:var(--text-muted);padding:8px 0 20px}
+.footer a{color:var(--green-mid);text-decoration:none}
+.footer a:hover{text-decoration:underline}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+
+@media(max-width:1000px){.grid{grid-template-columns:1fr 1fr}.span3,.alert-card,.comment-card,.gh-card{grid-column:span 2}}
+@media(max-width:640px){.grid{grid-template-columns:1fr}.span2,.span3,.alert-card,.comment-card,.gh-card{grid-column:span 1}.cal-wrap,.alert-top,.gh-top{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo-mark">🌿</div>
+    <div>
+      <div class="header-title">King's Gardens</div>
+      <div class="header-sub">Staff Dashboard &nbsp;·&nbsp; Lexington, KY 40515</div>
+    </div>
+  </div>
+  <div>
+    <div class="clock" id="clock">--:-- --</div>
+    <div class="date-line" id="dateLine">Loading…</div>
+  </div>
+</div>
+
+<div class="grid">
+
+  <!-- ALERT SLOT: big red card injected here by JS when NWS issues frost/freeze -->
+  <div id="alertSlot" style="display:contents"></div>
+
+  <!-- GREENHOUSE SLOT: big yellow card injected when temp <45, severe storms, or wind gusts >45mph -->
+  <div id="ghSlot" style="display:contents"></div>
+
+  <!-- NWS WEATHER -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">NWS Forecast — 40515</span>
+      <span class="badge badge-live">● Live</span>
+    </div>
+    <div id="nwsContent" style="color:var(--text-muted);font-size:13px;padding:8px 0">Fetching weather…</div>
+  </div>
+
+  <!-- WEATHER STATION -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Our Weather Station</span>
+      <span class="badge badge-blue">Ambient WX</span>
+    </div>
+    <div class="st-grid">
+      <div class="st-box"><div class="st-label">Temp</div><div class="st-val" id="st-temp">--°F</div><div class="st-sub" id="st-temp-sub">—</div></div>
+      <div class="st-box"><div class="st-label">Humidity</div><div class="st-val" id="st-hum">--%</div><div class="st-sub">Relative</div></div>
+      <div class="st-box"><div class="st-label">Wind</div><div class="st-val" id="st-wind">-- mph</div><div class="st-sub" id="st-wind-dir">—</div></div>
+      <div class="st-box"><div class="st-label">Rain Today</div><div class="st-val" id="st-rain">-- in</div><div class="st-sub">Accumulation</div></div>
+    </div>
+    <div style="margin-top:10px;padding:7px 10px;background:var(--blue-pale);border-radius:7px;font-size:11px;color:var(--blue)">
+      💡 Enter your Ambient Weather API + Application keys to auto-connect.
+    </div>
+    <div class="key-row"><label>API Key</label><input type="password" id="awApi" placeholder="Ambient API Key"><button class="btn-blue" onclick="connectStation()" style="white-space:nowrap">Connect</button></div>
+    <div class="key-row"><label>App Key</label><input type="password" id="awApp" placeholder="Application Key"></div>
+    <div class="st-status" id="stStatus"></div>
+    <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px">
+      <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Manual entry</div>
+      <div class="manual-row">
+        <input id="m-temp" placeholder="Temp °F">
+        <input id="m-hum"  placeholder="Hum %">
+        <input id="m-wind" placeholder="Wind mph">
+        <input id="m-rain" placeholder="Rain in">
+        <button class="btn-ghost" onclick="manualStation()">Update</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MESSAGE TO STAFF -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Message to Staff</span>
+      <span class="msg-ts" id="msgTs"></span>
+    </div>
+    <div class="msg-body" id="msgBody">Welcome to King's Gardens! Check the board for today's tasks and have a great day. 🌱</div>
+    <div class="msg-edit">
+      <textarea id="msgInput" placeholder="Type a new message for your team…"></textarea>
+      <button class="btn-green" onclick="postMessage()">Post</button>
+    </div>
+  </div>
+
+  <!-- COMMENT SLOT: observation log card injected here when alert fires -->
+  <div id="commentSlot" style="display:contents"></div>
+
+  <!-- DELIVERY CALENDAR -->
+  <div class="card span3">
+    <div class="card-header">
+      <span class="card-title">Delivery Calendar</span>
+      <span class="badge badge-blue">Trucks In</span>
+    </div>
+    <div class="cal-wrap">
+      <div class="cal-left">
+        <div class="cal-nav">
+          <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
+          <span class="cal-month-lbl" id="calMonthLbl"></span>
+          <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+      <div class="cal-right">
+        <div class="cal-date-lbl" id="calDateLbl">Select a date to view or add deliveries</div>
+        <div class="event-list" id="eventList"><div style="font-size:12px;color:var(--text-muted)">No deliveries scheduled.</div></div>
+        <div class="event-add">
+          <input class="ev-name-in" id="evName" placeholder="Vendor / description">
+          <input class="ev-time-in" id="evTime" placeholder="Time (e.g. 8am)">
+          <select id="evType">
+            <option value="delivery">🚚 Delivery In</option>
+            <option value="vendor">🏭 Vendor Visit</option>
+            <option value="misc">📋 Other</option>
+          </select>
+          <button class="btn-blue" onclick="addEvent()">+ Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Weather auto-refreshes every 15 min &nbsp;·&nbsp;
+  <a href="#" onclick="fetchNWS();return false">Refresh now</a> &nbsp;·&nbsp;
+  <a href="#" onclick="demoAlert();return false">Demo: freeze alert</a> &nbsp;·&nbsp;
+  <a href="#" onclick="demoGH();return false">Demo: greenhouse warning</a> &nbsp;·&nbsp;
+  <a href="#" onclick="demoClear();return false">Demo: clear all</a>
+</div>
+
+<script>
+// ── CLOCK ──────────────────────────────────────────
+function tick(){
+  const n=new Date(),h=n.getHours(),m=n.getMinutes();
+  document.getElementById('clock').textContent=`${h%12||12}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`;
+  document.getElementById('dateLine').textContent=n.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+}
+setInterval(tick,1000); tick();
+
+// ── NWS WEATHER ────────────────────────────────────
+const LAT=38.0406,LON=-84.5037,UA='KingsGardensDashboard/1.0';
+const ICONS={'Sunny':'☀️','Clear':'☀️','Partly Cloudy':'⛅','Mostly Cloudy':'🌥️','Cloudy':'☁️','Overcast':'☁️','Rain':'🌧️','Showers':'🌦️','Thunderstorm':'⛈️','Snow':'❄️','Sleet':'🌨️','Fog':'🌫️','Windy':'💨'};
+function wxIcon(t){for(const[k,v]of Object.entries(ICONS))if(t.includes(k))return v;return'🌡️'}
+
+async function fetchNWS(){
+  const el=document.getElementById('nwsContent');
+  el.innerHTML='<span style="color:var(--text-muted);font-size:13px">Refreshing…</span>';
+  try{
+    const pt=await(await fetch(`https://api.weather.gov/points/${LAT},${LON}`,{headers:{'User-Agent':UA}})).json();
+    const pp=pt.properties;
+    const[fc,hr,al]=await Promise.all([
+      fetch(pp.forecast,{headers:{'User-Agent':UA}}).then(r=>r.json()),
+      fetch(pp.forecastHourly,{headers:{'User-Agent':UA}}).then(r=>r.json()),
+      fetch(`https://api.weather.gov/alerts/active?point=${LAT},${LON}`,{headers:{'User-Agent':UA}}).then(r=>r.json())
+    ]);
+    const periods=fc.properties.periods;
+    const cur=hr.properties.periods[0];
+    const dayP=periods.find(p=>p.isDaytime)||periods[0];
+    const niteP=periods.find(p=>!p.isDaytime)||periods[1];
+    const temp=cur.temperature,hi=dayP.temperature,lo=niteP.temperature;
+    const wind=cur.windSpeed||'--',wdir=cur.windDirection||'--';
+    const precip=cur.probabilityOfPrecipitation?.value;
+    const days5=periods.filter(p=>p.isDaytime).slice(0,5);
+
+    // ── ALERT DETECTION ──────────────────────
+    const frostAlerts=(al.features||[]).filter(f=>{
+      const ev=(f.properties?.event||'').toLowerCase();
+      return ev.includes('frost')||ev.includes('freeze');
+    });
+
+    if(frostAlerts.length>0){
+      // Real NWS frost/freeze alert — use the actual text
+      const p=frostAlerts[0].properties;
+      let exp='';
+      try{if(p.expires)exp=new Date(p.expires).toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'});}catch(e){}
+      showAlert({name:p.event,lo,headline:p.headline||p.event,desc:p.description||'',exp});
+    } else if(lo<=36){
+      // No formal alert but low is dangerous
+      const name=lo<=28?'Hard Freeze Warning':lo<=32?'Freeze Warning':'Frost Advisory';
+      const desc=lo<=32
+        ?`No formal NWS alert is active, but tonight's forecast low of ${lo}°F is at or below freezing. Cover all frost-sensitive plants, check greenhouse heaters, and drain exposed irrigation lines.`
+        :`No formal NWS alert is active, but tonight's forecast low of ${lo}°F is near frost threshold. Monitor tender plants and protect as needed.`;
+      showAlert({name,lo,headline:`Forecast low of ${lo}°F tonight — take precautions.`,desc,exp:''});
+    } else {
+      clearAlert();
+    }
+
+    // ── GREENHOUSE WARNING CHECK ─────────────
+    // Look ahead up to 18 hours of hourly periods
+    const hrPeriods = hr.properties.periods;
+    const next18 = hrPeriods.slice(0, 18);
+    const next12 = hrPeriods.slice(0, 12);
+
+    const ghReasons = [];
+
+    // 1. Any temp below 45°F in next 18 hours
+    const coldHour = next18.find(p => p.temperature <= 45);
+    if (coldHour) ghReasons.push(`🌡️ Temp dropping to ${coldHour.temperature}°F (${coldHour.name})`);
+
+    // 2. Severe thunderstorm in next 18 hours (forecast text check)
+    const stormHour = next18.find(p => {
+      const t = (p.shortForecast||'').toLowerCase();
+      return t.includes('thunderstorm') || t.includes('severe') || t.includes('tornado');
+    });
+    // Also check NWS severe alerts
+    const severeAlerts = (al.features||[]).filter(f => {
+      const ev = (f.properties?.event||'').toLowerCase();
+      return ev.includes('thunderstorm') || ev.includes('tornado') || ev.includes('severe');
+    });
+    if (stormHour) ghReasons.push(`⛈️ ${stormHour.shortForecast} expected (${stormHour.name})`);
+    else if (severeAlerts.length) ghReasons.push(`⛈️ ${severeAlerts[0].properties.event} in effect`);
+
+    // 3. Wind gusts above 45 mph in next 12 hours
+    const gustyHour = next12.find(p => {
+      const gs = p.windGust?.value;
+      if (gs != null) return gs >= 45; // NWS hourly windGust is in km/h
+      // fallback: parse windSpeed string like "40 to 55 mph"
+      const speeds = (p.windSpeed||'').match(/\d+/g);
+      if (speeds) return Math.max(...speeds.map(Number)) >= 45;
+      return false;
+    });
+    // NWS windGust is in km/h in the API — convert: 45 mph = ~72 km/h
+    const gustyHourMph = next12.find(p => {
+      const gs = p.windGust?.value;
+      if (gs != null) return gs >= 72;
+      const speeds = (p.windSpeed||'').match(/\d+/g);
+      if (speeds) return Math.max(...speeds.map(Number)) >= 45;
+      return false;
+    });
+    if (gustyHourMph) {
+      const mph = gustyHourMph.windGust?.value != null
+        ? Math.round(gustyHourMph.windGust.value * 0.621)
+        : '45+';
+      ghReasons.push(`💨 Wind gusts up to ${mph} mph (${gustyHourMph.name})`);
+    }
+
+    if (ghReasons.length > 0) {
+      showGH(ghReasons);
+    } else {
+      clearGH();
+    }
+    el.innerHTML=`
+      <div class="wx-top">
+        <div><div class="wx-temp">${temp}<sup>°F</sup></div></div>
+        <div style="padding-top:8px">
+          <div class="wx-desc">${cur.shortForecast}</div>
+          <div class="wx-note">Wind: ${wind} ${wdir} &nbsp;·&nbsp; Precip: ${precip!=null?precip+'%':'N/A'}</div>
+        </div>
+      </div>
+      <div class="wx-stats">
+        <div class="stat-box"><div class="stat-label">Today High</div><div class="stat-val">${hi}°F</div><div class="stat-sub">Daytime</div></div>
+        <div class="stat-box">
+          <div class="stat-label">Tonight Low</div>
+          <div class="stat-val" style="color:${lo<=32?'#991a1a':lo<=36?'#7a4f00':'inherit'}">${lo}°F</div>
+          <div class="stat-sub">${lo<=28?'⚠️ Hard Freeze':lo<=32?'⚠️ Freeze':lo<=36?'⚠️ Frost Risk':'✓ Clear'}</div>
+        </div>
+        <div class="stat-box"><div class="stat-label">Wind</div><div class="stat-val" style="font-size:14px">${wind}</div><div class="stat-sub">${wdir}</div></div>
+        <div class="stat-box"><div class="stat-label">Precip Chance</div><div class="stat-val">${precip!=null?precip+'%':'--'}</div><div class="stat-sub">Probability</div></div>
+      </div>
+      <div class="forecast-strip">
+        ${days5.map(p=>`<div class="fc-day"><div class="fc-name">${p.name.slice(0,3)}</div><div class="fc-icon">${wxIcon(p.shortForecast)}</div><div class="fc-hi">${p.temperature}°</div><div class="fc-cond">${p.shortForecast.slice(0,12)}</div></div>`).join('')}
+      </div>`;
+  }catch(err){
+    document.getElementById('nwsContent').innerHTML=`<div style="font-size:12px;color:var(--text-muted)">Could not load NWS data — check connection.<br><small style="opacity:.6">${err.message}</small></div>`;
+  }
+}
+
+// ── ALERT CARD ─────────────────────────────────────
+let alertActive=false, postComments=[];
+
+function severityStyle(name,lo){
+  const e=(name||'').toLowerCase();
+  if(e.includes('hard freeze')||lo<=28) return{bg:'#5c0a0a',hdr:'#8b1111',icon:'🧊',pulse:true};
+  if(e.includes('freeze warning')||lo<=32) return{bg:'#7a1111',hdr:'#b03030',icon:'❄️',pulse:true};
+  if(e.includes('freeze watch'))          return{bg:'#6b3300',hdr:'#9e5200',icon:'❄️',pulse:false};
+  return                                        {bg:'#1d3557',hdr:'#2e5a8a',icon:'🌡️',pulse:false};
+}
+
+function showAlert({name,lo,headline,desc,exp}){
+  alertActive=true;
+  const s=severityStyle(name,lo);
+  const shortDesc=(desc||'').length>420?desc.slice(0,420).replace(/\s\S+$/,'')+'…':desc;
+  document.getElementById('alertSlot').innerHTML=`
+    <div class="alert-card${s.pulse?' pulse':''}" style="background:${s.bg};border:2.5px solid ${s.hdr}">
+      <div class="alert-top" style="background:${s.hdr}">
+        <div class="alert-top-left">
+          <div class="alert-icon-big">${s.icon}</div>
+          <div>
+            <div class="alert-event">${name.toUpperCase()}</div>
+            <div class="alert-source">National Weather Service &nbsp;·&nbsp; Lexington, KY 40515${exp?'&nbsp;·&nbsp; Expires '+exp:''}</div>
+          </div>
+        </div>
+        ${lo!=null?`<div class="alert-low-pill"><div class="alert-low-label">Tonight's Low</div><div class="alert-low-temp">${lo}°F</div></div>`:''}
+      </div>
+      <div class="alert-body">
+        <div class="alert-divider"></div>
+        ${headline?`<div class="alert-headline">${headline}</div>`:''}
+        ${shortDesc?`<div class="alert-desc">${shortDesc}</div>`:''}
+        <div class="alert-tags">
+          <span class="alert-tag">🌱 Cover tender annuals &amp; perennials</span>
+          <span class="alert-tag">🌡️ Check greenhouse heaters</span>
+          <span class="alert-tag">💧 Protect irrigation &amp; pipes</span>
+          <span class="alert-tag">🪴 Move potted tropicals inside</span>
+        </div>
+      </div>
+    </div>`;
+  if(!document.getElementById('commentCard')) injectCommentCard();
+}
+
+function clearAlert(){
+  alertActive=false;
+  document.getElementById('alertSlot').innerHTML='';
+  if(postComments.length===0) document.getElementById('commentSlot').innerHTML='';
+}
+
+function injectCommentCard(){
+  document.getElementById('commentSlot').innerHTML=`
+    <div class="comment-card" id="commentCard">
+      <div class="card-header">
+        <span class="card-title">📋 Frost / Freeze Event — Staff Observation Log</span>
+        <span class="badge badge-red">Log your observations</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.65">
+        Record plant damage, actions taken, areas affected, greenhouse temps, and anything else worth noting during or after this event. Entries are timestamped automatically.
+      </p>
+      <div class="comment-list" id="commentList">
+        <div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:4px 0">No observations logged yet.</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
+        <input id="commentAuthor" placeholder="Your name" style="width:160px">
+        <span style="font-size:11px;color:var(--text-muted)">then type your note →</span>
+      </div>
+      <div class="comment-input-row">
+        <textarea id="commentInput" placeholder="e.g. Covered flats in greenhouse 2. Heater holding at 48°F. Some wilting on exposed impatiens in lot C. Moved citrus inside."></textarea>
+        <button class="btn-green" onclick="addComment()" style="height:56px;align-self:flex-end;white-space:nowrap;padding:0 16px">Log Note</button>
+      </div>
+    </div>`;
+  renderComments();
+}
+
+function addComment(){
+  const ae=document.getElementById('commentAuthor'),ie=document.getElementById('commentInput');
+  if(!ae||!ie)return;
+  const body=ie.value.trim();
+  if(!body){ie.focus();return;}
+  postComments.push({who:ae.value.trim()||'Staff',body,ts:new Date().toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})});
+  ie.value='';
+  renderComments();
+}
+
+function renderComments(){
+  const el=document.getElementById('commentList');
+  if(!el)return;
+  if(!postComments.length){el.innerHTML='<div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:4px 0">No observations logged yet.</div>';return;}
+  el.innerHTML=postComments.map(c=>`<div class="comment-item"><div class="comment-meta">${c.who} &nbsp;·&nbsp; ${c.ts}</div><div class="comment-body">${c.body}</div></div>`).join('');
+  el.scrollTop=el.scrollHeight;
+}
+
+function demoAlert(){
+  showAlert({name:'Freeze Warning',lo:29,
+    headline:'Freeze Warning in effect from midnight tonight through 9 AM EST Thursday.',
+    desc:'A hard freeze is likely overnight with minimum temperatures dropping into the upper 20s. Frost-sensitive vegetation may be killed outright. Tender plants should be covered or brought indoors. Outdoor pipes and irrigation lines should be drained or insulated. Ensure greenhouse heating systems are set no lower than 40°F.',
+    exp:'Thu, Mar 27 — 9:00 AM EST'});
+}
+function demoGH(){
+  showGH([
+    '🌡️ Temp dropping to 42°F (Tonight)',
+    '⛈️ Severe Thunderstorm Watch in effect',
+    '💨 Wind gusts up to 52 mph (This Evening)'
+  ]);
+}
+function demoClear(){ clearAlert(); clearGH(); }
+
+// ── GREENHOUSE WARNING CARD ────────────────────────
+function showGH(reasons){
+  document.getElementById('ghSlot').innerHTML=`
+    <div class="gh-card">
+      <div class="gh-top">
+        <div class="gh-top-left">
+          <div class="gh-icon">🏡</div>
+          <div>
+            <div class="gh-headline">CLOSE ALL GREENHOUSES TONIGHT</div>
+            <div class="gh-sub">Weather conditions require greenhouse closure — see reasons below</div>
+          </div>
+        </div>
+      </div>
+      <div class="gh-body">
+        <div class="gh-divider"></div>
+        <div class="gh-reasons">
+          ${reasons.map(r=>`<span class="gh-reason">${r}</span>`).join('')}
+        </div>
+        <div class="gh-note">Close and latch all vents, doors, and roll-up sides before end of day. Verify heating systems are operational. Check back on this dashboard for updates.</div>
+      </div>
+    </div>`;
+}
+
+function clearGH(){
+  document.getElementById('ghSlot').innerHTML='';
+}
+
+// ── AMBIENT WEATHER STATION ────────────────────────
+function deg2dir(d){return['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(d/22.5)%16]}
+
+async function connectStation(){
+  const api=document.getElementById('awApi').value.trim(),app=document.getElementById('awApp').value.trim();
+  const st=document.getElementById('stStatus');
+  if(!api||!app){st.textContent='⚠ Enter both keys first.';return;}
+  st.textContent='Connecting…';
+  try{
+    const data=await(await fetch(`https://api.ambientweather.net/v1/devices?applicationKey=${app}&apiKey=${api}`)).json();
+    if(!Array.isArray(data)||!data.length){st.textContent='⚠ No devices found.';return;}
+    applyStation(data[0].lastData);
+    const ts=new Date(data[0].lastData.dateutc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    st.textContent=`✓ Connected · last update ${ts}`;
+    clearInterval(window._stInt);
+    window._stInt=setInterval(async()=>{
+      try{
+        const d2=await(await fetch(`https://api.ambientweather.net/v1/devices?applicationKey=${app}&apiKey=${api}`)).json();
+        if(Array.isArray(d2)&&d2.length){applyStation(d2[0].lastData);const ts2=new Date(d2[0].lastData.dateutc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});st.textContent=`✓ Connected · last update ${ts2}`;}
+      }catch(e){st.textContent='⚠ Refresh error: '+e.message;}
+    },5*60*1000);
+  }catch(e){st.textContent='⚠ Error: '+e.message;}
+}
+
+function applyStation(d){setStation(d.tempf??null,d.humidity??null,d.windspeedmph??null,d.winddir!=null?deg2dir(d.winddir):null,d.dailyrainin??null)}
+
+function setStation(t,h,w,wd,r){
+  document.getElementById('st-temp').textContent=t!=null?Math.round(t)+'°F':'--°F';
+  document.getElementById('st-temp-sub').textContent=t!=null?(t<=32?'⚠️ At/below freezing':t<=36?'⚠️ Frost risk':'Normal'):'—';
+  document.getElementById('st-hum').textContent=h!=null?Math.round(h)+'%':'--%';
+  document.getElementById('st-wind').textContent=w!=null?Math.round(w)+' mph':'-- mph';
+  document.getElementById('st-wind-dir').textContent=wd||'—';
+  document.getElementById('st-rain').textContent=r!=null?r.toFixed(2)+' in':'-- in';
+}
+
+function manualStation(){
+  const t=parseFloat(document.getElementById('m-temp').value),h=parseFloat(document.getElementById('m-hum').value);
+  const w=parseFloat(document.getElementById('m-wind').value),r=parseFloat(document.getElementById('m-rain').value);
+  setStation(isNaN(t)?null:t,isNaN(h)?null:h,isNaN(w)?null:w,null,isNaN(r)?null:r);
+}
+
+// ── STAFF MESSAGE ─────────────────────────────────
+function postMessage(){
+  const v=document.getElementById('msgInput').value.trim();
+  if(!v)return;
+  document.getElementById('msgBody').textContent=v;
+  document.getElementById('msgInput').value='';
+  document.getElementById('msgTs').textContent='Updated '+new Date().toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+}
+
+// ── DELIVERY CALENDAR ─────────────────────────────
+let calView=new Date(),calSel=null,calEvs={};
+function fmtKey(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function changeMonth(dir){calView=new Date(calView.getFullYear(),calView.getMonth()+dir,1);renderCal()}
+function selectDay(k){calSel=k;renderCal();const d=new Date(k+'T12:00:00');document.getElementById('calDateLbl').textContent=d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});renderEvList()}
+
+function renderCal(){
+  const y=calView.getFullYear(),m=calView.getMonth();
+  document.getElementById('calMonthLbl').textContent=calView.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const fd=new Date(y,m,1).getDay(),dim=new Date(y,m+1,0).getDate(),tk=fmtKey(new Date());
+  let h=['S','M','T','W','T','F','S'].map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  for(let i=0;i<fd;i++)h+='<div></div>';
+  for(let d=1;d<=dim;d++){
+    const k=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const c=['cal-day',k===tk?'today':'',k===calSel&&k!==tk?'selected':'',calEvs[k]?.length?'has-event':''].filter(Boolean).join(' ');
+    h+=`<div class="${c}" onclick="selectDay('${k}')">${d}</div>`;
+  }
+  document.getElementById('calGrid').innerHTML=h;
+}
+
+function renderEvList(){
+  const el=document.getElementById('eventList'),evs=calEvs[calSel]||[];
+  if(!evs.length){el.innerHTML='<div style="font-size:12px;color:var(--text-muted)">No deliveries scheduled for this date.</div>';return;}
+  const dc={delivery:'dot-delivery',vendor:'dot-vendor',misc:'dot-misc'};
+  el.innerHTML=evs.map((e,i)=>`<div class="event-item"><span class="ev-dot ${dc[e.type]||'dot-misc'}"></span><span class="ev-name">${e.name}</span><span class="ev-time">${e.time}</span><span class="ev-del" onclick="deleteEvent(${i})" title="Remove">✕</span></div>`).join('');
+}
+
+function addEvent(){
+  if(!calSel){alert('Select a date first.');return;}
+  const name=document.getElementById('evName').value.trim();
+  if(!name)return;
+  const time=document.getElementById('evTime').value.trim(),type=document.getElementById('evType').value;
+  if(!calEvs[calSel])calEvs[calSel]=[];
+  calEvs[calSel].push({name,time,type});
+  document.getElementById('evName').value='';document.getElementById('evTime').value='';
+  renderCal();renderEvList();
+}
+
+function deleteEvent(i){calEvs[calSel].splice(i,1);renderCal();renderEvList()}
+
+// ── INIT ──────────────────────────────────────────
+fetchNWS();
+renderCal();
+selectDay(fmtKey(new Date()));
+setInterval(fetchNWS,15*60*1000);
+</script>
+</body>
+</html>
