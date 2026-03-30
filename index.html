@@ -163,6 +163,32 @@ button:hover{opacity:.85}
 .event-add .ev-time-in{width:76px}
 .event-add select{width:110px}
 
+
+/* GDD CARD */
+.gdd-hero{display:flex;align-items:flex-end;gap:6px;margin-bottom:14px}
+.gdd-number{font-size:52px;font-weight:300;line-height:1;letter-spacing:-2px;color:var(--text)}
+.gdd-unit{font-size:16px;color:var(--text-muted);margin-bottom:8px}
+.gdd-label{font-size:12px;color:var(--text-muted);margin-bottom:8px;padding-left:2px}
+.gdd-bases{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.gdd-base-btn{padding:6px 0;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text-muted);transition:all .15s;text-align:center}
+.gdd-base-btn.active{border-color:var(--green-mid);background:var(--green-pale);color:var(--green)}
+.gdd-base-btn:hover:not(.active){background:var(--green-pale);color:var(--green)}
+.gdd-bar-wrap{margin-bottom:12px}
+.gdd-bar-label{display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.gdd-bar-track{height:8px;background:var(--surface);border-radius:20px;border:1px solid var(--border);overflow:hidden}
+.gdd-bar-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--green-mid),var(--green));transition:width .6s ease}
+.gdd-milestones{display:flex;flex-direction:column;gap:5px}
+.gdd-milestone{display:flex;align-items:center;gap:8px;font-size:12px;padding:5px 8px;border-radius:7px;background:var(--surface)}
+.gdd-ms-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--border)}
+.gdd-ms-name{flex:1;color:var(--text-mid)}
+.gdd-ms-val{color:var(--text-muted);font-size:11px}
+.gdd-ms-reached{background:var(--green-pale)}
+.gdd-ms-reached .gdd-ms-name{color:var(--green);font-weight:500}
+.gdd-ms-reached .gdd-ms-dot{background:var(--green-mid)}
+.gdd-reset-row{display:flex;gap:8px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.gdd-reset-row label{font-size:11px;color:var(--text-muted);white-space:nowrap}
+.gdd-status{font-size:11px;color:var(--text-muted);margin-top:6px;min-height:14px}
+
 /* FOOTER */
 .footer{text-align:center;font-size:11px;color:var(--text-muted);padding:8px 0 20px}
 .footer a{color:var(--green-mid);text-decoration:none}
@@ -255,6 +281,43 @@ button:hover{opacity:.85}
   <!-- COMMENT SLOT: observation log card injected here when alert fires -->
   <div id="commentSlot" style="display:contents"></div>
 
+
+  <!-- GROWING DEGREE DAYS -->
+  <div class="card span2" id="gddCard">
+    <div class="card-header">
+      <span class="card-title">Growing Degree Days</span>
+      <span class="badge badge-live" id="gddBadge">Loading…</span>
+    </div>
+    <div style="display:flex;gap:24px;align-items:flex-start">
+      <div style="flex:1">
+        <div class="gdd-hero">
+          <div class="gdd-number" id="gddTotal">--</div>
+          <div><div class="gdd-unit">GDD</div><div class="gdd-label" id="gddSince">since Jan 1</div></div>
+        </div>
+        <div class="gdd-bases">
+          <div class="gdd-base-btn active" id="gddBtn50" onclick="setGDDBase(50)">Base 50°F<br><span style="font-weight:400;font-size:10px">Ornamentals</span></div>
+          <div class="gdd-base-btn" id="gddBtn40" onclick="setGDDBase(40)">Base 40°F<br><span style="font-weight:400;font-size:10px">Cool season</span></div>
+          <div class="gdd-base-btn" id="gddBtn32" onclick="setGDDBase(32)">Base 32°F<br><span style="font-weight:400;font-size:10px">All growth</span></div>
+        </div>
+        <div class="gdd-bar-wrap">
+          <div class="gdd-bar-label"><span>Season progress</span><span id="gddPct">0%</span></div>
+          <div class="gdd-bar-track"><div class="gdd-bar-fill" id="gddBar" style="width:0%"></div></div>
+        </div>
+        <div class="gdd-status" id="gddStatus"></div>
+      </div>
+      <div style="flex:1">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px">Phenology Milestones</div>
+        <div class="gdd-milestones" id="gddMilestones"></div>
+      </div>
+    </div>
+    <div class="gdd-reset-row">
+      <label>Start date</label>
+      <input type="date" id="gddStartDate" style="width:130px" onchange="fetchGDD()">
+      <button class="btn-ghost" onclick="fetchGDD()" style="font-size:11px;padding:5px 10px">Recalculate</button>
+      <span style="font-size:11px;color:var(--text-muted)" id="gddDaysCount"></span>
+    </div>
+  </div>
+
   <!-- DELIVERY CALENDAR -->
   <div class="card span3">
     <div class="card-header">
@@ -291,7 +354,9 @@ button:hover{opacity:.85}
 
 <div class="footer">
   Weather auto-refreshes every 15 min &nbsp;·&nbsp;
-  <a href="#" onclick="fetchNWS();return false">Refresh now</a> &nbsp;·&nbsp;
+  <a href="#" onclick="fetchNWS();
+fetchGDD();
+setInterval(fetchGDD,60*60*1000);return false">Refresh now</a> &nbsp;·&nbsp;
   <a href="#" onclick="demoAlert();return false">Demo: freeze alert</a> &nbsp;·&nbsp;
   <a href="#" onclick="demoGH();return false">Demo: greenhouse warning</a> &nbsp;·&nbsp;
   <a href="#" onclick="demoClear();return false">Demo: clear all</a>
@@ -656,6 +721,83 @@ function addEvent(){
 }
 
 function deleteEvent(i){calEvs[calSel].splice(i,1);renderCal();renderEvList()}
+
+
+// ── GROWING DEGREE DAYS ──────────────────────
+let gddBase=50,gddData=[];
+const GDD_MS={
+  50:[{gdd:100,icon:'🌸',name:'Forsythia peak bloom'},{gdd:200,icon:'🌷',name:'Tulip & daffodil peak'},{gdd:350,icon:'🍎',name:'Crabapple bloom'},{gdd:500,icon:'🌿',name:'Lilac full bloom'},{gdd:700,icon:'🌹',name:'Rose first flush'},{gdd:1000,icon:'🦟',name:'Japanese beetle emergence'},{gdd:1350,icon:'🌻',name:'Coneflower bloom'}],
+  40:[{gdd:150,icon:'🌱',name:'Cool-season germination'},{gdd:300,icon:'🥬',name:'Lettuce transplant window'},{gdd:600,icon:'🌸',name:'Pansy peak color'},{gdd:900,icon:'🌿',name:'Perennial ground cover est.'},{gdd:1400,icon:'🌻',name:'Warm-season planting safe'},{gdd:2000,icon:'🍂',name:'Fall planting window opens'}],
+  32:[{gdd:200,icon:'🌱',name:'Soil workable — early seeding'},{gdd:500,icon:'🌸',name:'Early spring bloomers peak'},{gdd:1000,icon:'🌿',name:'Full canopy leaf-out'},{gdd:1800,icon:'🌻',name:'Mid-summer annuals peak'},{gdd:2800,icon:'🍂',name:'First fall color'},{gdd:3500,icon:'❄️',name:'Hardening off / dormancy'}]
+};
+const GDD_MAX={50:2500,40:3500,32:5000};
+
+function setGDDBase(b){
+  gddBase=b;
+  [50,40,32].forEach(x=>document.getElementById('gddBtn'+x).classList.toggle('active',x===b));
+  renderGDD();
+}
+
+async function fetchGDD(){
+  const badge=document.getElementById('gddBadge'),status=document.getElementById('gddStatus');
+  badge.textContent='Loading…';
+  const si=document.getElementById('gddStartDate');
+  if(!si.value) si.value=new Date().getFullYear()+'-01-01';
+  const startDate=new Date(si.value+'T12:00:00'),today=new Date();
+  today.setHours(0,0,0,0);
+  const dates=[];
+  const d=new Date(startDate);
+  while(d<today){dates.push(new Date(d));d.setDate(d.getDate()+1);}
+  if(!dates.length){status.textContent='Start date must be before today.';return;}
+  document.getElementById('gddDaysCount').textContent=dates.length+' days accumulated';
+  status.textContent='Fetching '+dates.length+' days of temperature data…';
+  try{
+    const pt=await(await fetch('https://api.weather.gov/points/'+LAT+','+LON,{headers:{'User-Agent':UA}})).json();
+    const stR=await(await fetch(pt.properties.observationStations,{headers:{'User-Agent':UA}})).json();
+    const stId=stR.features[0].properties.stationIdentifier;
+    const start=startDate.toISOString().split('T')[0];
+    const obsR=await(await fetch('https://api.weather.gov/stations/'+stId+'/observations?start='+start+'T00:00:00Z&limit=500',{headers:{'User-Agent':UA}})).json();
+    const daily={};
+    for(const f of(obsR.features||[])){
+      const raw=f.properties.temperature?.value;
+      if(raw==null)continue;
+      const tf=raw*9/5+32,ds=f.properties.timestamp.slice(0,10);
+      if(!daily[ds])daily[ds]={hi:-999,lo:999};
+      if(tf>daily[ds].hi)daily[ds].hi=tf;
+      if(tf<daily[ds].lo)daily[ds].lo=tf;
+    }
+    const fcD=await(await fetch(pt.properties.forecast,{headers:{'User-Agent':UA}})).json();
+    const ts=today.toISOString().slice(0,10);
+    const tp=(fcD.properties?.periods||[]).filter(p=>p.startTime.slice(0,10)===ts);
+    if(tp.length&&!daily[ts]){daily[ts]={hi:Math.max(...tp.map(p=>p.temperature)),lo:Math.min(...tp.map(p=>p.temperature))};}
+    gddData=[];let tot=0;
+    for(const dt of dates){
+      const ds=dt.toISOString().slice(0,10),day=daily[ds];
+      if(!day||day.hi===-999)continue;
+      const gdd=Math.max(0,(day.hi+day.lo)/2-gddBase);
+      tot+=gdd;gddData.push({date:ds,gdd,total:tot});
+    }
+    badge.textContent='● Live';badge.style.background='var(--green-pale)';badge.style.color='var(--green)';
+    status.textContent='Based on '+gddData.length+' days of NWS data · '+stId;
+    renderGDD();
+  }catch(e){badge.textContent='Error';status.textContent='Could not load: '+e.message;}
+}
+
+function renderGDD(){
+  if(!gddData.length)return;
+  const total=Math.round(gddData[gddData.length-1]?.total||0);
+  const pct=Math.min(100,Math.round(total/GDD_MAX[gddBase]*100));
+  document.getElementById('gddTotal').textContent=total.toLocaleString();
+  document.getElementById('gddBar').style.width=pct+'%';
+  document.getElementById('gddPct').textContent=pct+'%';
+  const sv=document.getElementById('gddStartDate').value;
+  if(sv){const d=new Date(sv+'T12:00:00');document.getElementById('gddSince').textContent='since '+d.toLocaleDateString('en-US',{month:'short',day:'numeric'});}
+  const el=document.getElementById('gddMilestones');
+  el.innerHTML=(GDD_MS[gddBase]||[]).map(m=>{
+    const reached=total>=m.gdd;
+    return '<div class="gdd-milestone'+(reached?' gdd-ms-reached':'')+'"><span class="gdd-ms-dot'+(reached?'':' ')+'"></span><span style="font-size:14px">'+m.icon+'</span><span class="gdd-ms-name">'+m.name+'</span><span class="gdd-ms-val">'+(reached?'✓ '+m.gdd:(m.gdd-total)+' to go')+'</span></div>';
+  }).join('');
+}
 
 // ── INIT ──────────────────────────────────────────
 fetchNWS();
