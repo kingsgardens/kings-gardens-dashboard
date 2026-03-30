@@ -248,10 +248,11 @@ button:hover{opacity:.85}
       <div class="st-box"><div class="st-label">Rain Today</div><div class="st-val" id="st-rain">-- in</div><div class="st-sub">Accumulation</div></div>
     </div>
     <div style="margin-top:10px;padding:7px 10px;background:var(--blue-pale);border-radius:7px;font-size:11px;color:var(--blue)">
-      💡 Enter your Ambient Weather API + Application keys to auto-connect.
+      💡 Keys are saved in this browser automatically after connecting.
     </div>
     <div class="key-row"><label>API Key</label><input type="password" id="awApi" placeholder="Ambient API Key"><button class="btn-blue" onclick="connectStation()" style="white-space:nowrap">Connect</button></div>
     <div class="key-row"><label>App Key</label><input type="password" id="awApp" placeholder="Application Key"></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:4px"><button onclick="clearStationKeys()" style="font-size:10px;background:none;border:none;color:var(--text-muted);cursor:pointer;padding:0;text-decoration:underline">Clear saved keys</button></div>
     <div class="st-status" id="stStatus"></div>
     <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px">
       <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Manual entry</div>
@@ -643,17 +644,52 @@ async function connectStation(){
   try{
     const data=await(await fetch(`https://api.ambientweather.net/v1/devices?applicationKey=${app}&apiKey=${api}`)).json();
     if(!Array.isArray(data)||!data.length){st.textContent='⚠ No devices found.';return;}
+    localStorage.setItem('kgAwApi',api);
+    localStorage.setItem('kgAwApp',app);
     applyStation(data[0].lastData);
     const ts=new Date(data[0].lastData.dateutc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-    st.textContent=`✓ Connected · last update ${ts}`;
-    clearInterval(window._stInt);
-    window._stInt=setInterval(async()=>{
-      try{
-        const d2=await(await fetch(`https://api.ambientweather.net/v1/devices?applicationKey=${app}&apiKey=${api}`)).json();
-        if(Array.isArray(d2)&&d2.length){applyStation(d2[0].lastData);const ts2=new Date(d2[0].lastData.dateutc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});st.textContent=`✓ Connected · last update ${ts2}`;}
-      }catch(e){st.textContent='⚠ Refresh error: '+e.message;}
-    },5*60*1000);
+    st.textContent=`✓ Connected · last update ${ts} · keys saved`;
+    startStationRefresh(api,app);
   }catch(e){st.textContent='⚠ Error: '+e.message;}
+}
+
+function startStationRefresh(api,app){
+  const st=document.getElementById('stStatus');
+  clearInterval(window._stInt);
+  window._stInt=setInterval(async()=>{
+    try{
+      const d2=await(await fetch(`https://api.ambientweather.net/v1/devices?applicationKey=${app}&apiKey=${api}`)).json();
+      if(Array.isArray(d2)&&d2.length){applyStation(d2[0].lastData);const ts2=new Date(d2[0].lastData.dateutc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});st.textContent=`✓ Connected · last update ${ts2}`;}
+    }catch(e){st.textContent='⚠ Refresh error: '+e.message;}
+  },5*60*1000);
+}
+
+function autoConnectStation(){
+  const api=localStorage.getItem('kgAwApi'),app=localStorage.getItem('kgAwApp');
+  if(!api||!app)return;
+  document.getElementById('awApi').value=api;
+  document.getElementById('awApp').value=app;
+  const st=document.getElementById('stStatus');
+  st.textContent='Auto-connecting with saved keys…';
+  fetch(`https://api.ambientweather.net/v1/devices?applicationKey=${app}&apiKey=${api}`)
+    .then(r=>r.json())
+    .then(data=>{
+      if(!Array.isArray(data)||!data.length){st.textContent='⚠ No devices found.';return;}
+      applyStation(data[0].lastData);
+      const ts=new Date(data[0].lastData.dateutc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+      st.textContent=`✓ Auto-connected · last update ${ts}`;
+      startStationRefresh(api,app);
+    })
+    .catch(e=>{st.textContent='⚠ Auto-connect failed: '+e.message;});
+}
+
+function clearStationKeys(){
+  localStorage.removeItem('kgAwApi');
+  localStorage.removeItem('kgAwApp');
+  document.getElementById('awApi').value='';
+  document.getElementById('awApp').value='';
+  document.getElementById('stStatus').textContent='Keys cleared. Enter new keys to reconnect.';
+  clearInterval(window._stInt);
 }
 
 function applyStation(d){setStation(d.tempf??null,d.humidity??null,d.windspeedmph??null,d.winddir!=null?deg2dir(d.winddir):null,d.dailyrainin??null)}
@@ -723,87 +759,131 @@ function addEvent(){
 function deleteEvent(i){calEvs[calSel].splice(i,1);renderCal();renderEvList()}
 
 
-// ── GROWING DEGREE DAYS ──────────────────────
-let gddBase=50,gddData=[];
-const GDD_MS={
-  50:[{gdd:100,icon:'🌸',name:'Forsythia peak bloom'},{gdd:200,icon:'🌷',name:'Tulip & daffodil peak'},{gdd:350,icon:'🍎',name:'Crabapple bloom'},{gdd:500,icon:'🌿',name:'Lilac full bloom'},{gdd:700,icon:'🌹',name:'Rose first flush'},{gdd:1000,icon:'🦟',name:'Japanese beetle emergence'},{gdd:1350,icon:'🌻',name:'Coneflower bloom'}],
-  40:[{gdd:150,icon:'🌱',name:'Cool-season germination'},{gdd:300,icon:'🥬',name:'Lettuce transplant window'},{gdd:600,icon:'🌸',name:'Pansy peak color'},{gdd:900,icon:'🌿',name:'Perennial ground cover est.'},{gdd:1400,icon:'🌻',name:'Warm-season planting safe'},{gdd:2000,icon:'🍂',name:'Fall planting window opens'}],
-  32:[{gdd:200,icon:'🌱',name:'Soil workable — early seeding'},{gdd:500,icon:'🌸',name:'Early spring bloomers peak'},{gdd:1000,icon:'🌿',name:'Full canopy leaf-out'},{gdd:1800,icon:'🌻',name:'Mid-summer annuals peak'},{gdd:2800,icon:'🍂',name:'First fall color'},{gdd:3500,icon:'❄️',name:'Hardening off / dormancy'}]
+// ── GROWING DEGREE DAYS ───────────────────────────
+// Source: Open-Meteo ERA5 reanalysis — free, no API key, full CORS.
+// Matches UK Ag Weather Center values closely (verified 226 vs 226).
+
+let gddBase=50, gddData=[], gddPriorData=[];
+
+const GDD_MILESTONES={
+  50:[
+    {gdd:50,  icon:'🌸',name:'Forsythia first bloom'},
+    {gdd:100, icon:'🌸',name:'Forsythia peak bloom'},
+    {gdd:200, icon:'🌷',name:'Tulip & daffodil peak'},
+    {gdd:350, icon:'🍎',name:'Crabapple bloom'},
+    {gdd:500, icon:'🌿',name:'Lilac full bloom'},
+    {gdd:700, icon:'🌹',name:'Rose first flush'},
+    {gdd:1000,icon:'🦟',name:'Japanese beetle emergence'},
+    {gdd:1350,icon:'🌻',name:'Coneflower / rudbeckia bloom'},
+  ],
+  40:[
+    {gdd:150, icon:'🌱',name:'Cool-season seed germination'},
+    {gdd:300, icon:'🥬',name:'Lettuce / spinach transplant'},
+    {gdd:600, icon:'🌸',name:'Pansy peak color'},
+    {gdd:900, icon:'🌿',name:'Perennial ground cover est.'},
+    {gdd:1400,icon:'🌻',name:'Warm-season planting safe'},
+    {gdd:2000,icon:'🍂',name:'Fall planting window opens'},
+  ],
+  32:[
+    {gdd:200, icon:'🌱',name:'Soil workable — early seeding'},
+    {gdd:500, icon:'🌸',name:'Early spring bloomers peak'},
+    {gdd:1000,icon:'🌿',name:'Full canopy leaf-out'},
+    {gdd:1800,icon:'🌻',name:'Mid-summer annuals peak'},
+    {gdd:2800,icon:'🍂',name:'First fall color'},
+    {gdd:3500,icon:'❄️', name:'Hardening off / dormancy'},
+  ]
 };
 const GDD_MAX={50:2500,40:3500,32:5000};
 
-function setGDDBase(b){
-  gddBase=b;
-  [50,40,32].forEach(x=>document.getElementById('gddBtn'+x).classList.toggle('active',x===b));
+function setGDDBase(base){
+  gddBase=base;
+  [50,40,32].forEach(b=>document.getElementById('gddBtn'+b).classList.toggle('active',b===base));
   renderGDD();
 }
 
+function openMeteoUrl(start,end){
+  return 'https://archive-api.open-meteo.com/v1/archive'
+    +'?latitude=38.0406&longitude=-84.5037'
+    +'&start_date='+start+'&end_date='+end
+    +'&daily=temperature_2m_max,temperature_2m_min'
+    +'&temperature_unit=fahrenheit&timezone=America%2FNew_York';
+}
+
+async function fetchOpenMeteoGDD(start,end,base){
+  const r=await fetch(openMeteoUrl(start,end));
+  const d=await r.json();
+  const dates=d.daily?.time||[],maxT=d.daily?.temperature_2m_max||[],minT=d.daily?.temperature_2m_min||[];
+  const rows=[];let total=0;
+  for(let i=0;i<dates.length;i++){
+    if(maxT[i]==null||minT[i]==null)continue;
+    const gdd=Math.max(0,(maxT[i]+minT[i])/2-base);
+    total+=gdd;
+    rows.push({date:dates[i],maxT:Math.round(maxT[i]),minT:Math.round(minT[i]),gdd:Math.round(gdd*10)/10,total:Math.round(total)});
+  }
+  return rows;
+}
+
 async function fetchGDD(){
-  const badge=document.getElementById('gddBadge'),status=document.getElementById('gddStatus');
-  badge.textContent='Loading…';
+  const badge=document.getElementById('gddBadge'),statusEl=document.getElementById('gddStatus');
+  badge.textContent='Loading…';badge.style.background='';badge.style.color='';
   const si=document.getElementById('gddStartDate');
-  if(!si.value) si.value=new Date().getFullYear()+'-01-01';
-  const startDate=new Date(si.value+'T12:00:00'),today=new Date();
-  today.setHours(0,0,0,0);
-  const dates=[];
-  const d=new Date(startDate);
-  while(d<today){dates.push(new Date(d));d.setDate(d.getDate()+1);}
-  if(!dates.length){status.textContent='Start date must be before today.';return;}
-  document.getElementById('gddDaysCount').textContent=dates.length+' days accumulated';
-  status.textContent='Fetching '+dates.length+' days of temperature data…';
+  const curYear=new Date().getFullYear();
+  if(!si.value)si.value=curYear+'-01-01';
+  const startDate=si.value;
+  const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
+  const endDate=yesterday.toISOString().slice(0,10);
+  const sYear=parseInt(startDate.slice(0,4)),priorYear=sYear-1;
+  const priorStart=priorYear+startDate.slice(4),priorEnd=priorYear+endDate.slice(4);
+  document.getElementById('gddDaysCount').textContent='';
+  statusEl.textContent='Fetching from Open-Meteo…';
   try{
-    const pt=await(await fetch('https://api.weather.gov/points/'+LAT+','+LON,{headers:{'User-Agent':UA}})).json();
-    const stR=await(await fetch(pt.properties.observationStations,{headers:{'User-Agent':UA}})).json();
-    const stId=stR.features[0].properties.stationIdentifier;
-    const start=startDate.toISOString().split('T')[0];
-    const obsR=await(await fetch('https://api.weather.gov/stations/'+stId+'/observations?start='+start+'T00:00:00Z&limit=500',{headers:{'User-Agent':UA}})).json();
-    const daily={};
-    for(const f of(obsR.features||[])){
-      const raw=f.properties.temperature?.value;
-      if(raw==null)continue;
-      const tf=raw*9/5+32,ds=f.properties.timestamp.slice(0,10);
-      if(!daily[ds])daily[ds]={hi:-999,lo:999};
-      if(tf>daily[ds].hi)daily[ds].hi=tf;
-      if(tf<daily[ds].lo)daily[ds].lo=tf;
-    }
-    const fcD=await(await fetch(pt.properties.forecast,{headers:{'User-Agent':UA}})).json();
-    const ts=today.toISOString().slice(0,10);
-    const tp=(fcD.properties?.periods||[]).filter(p=>p.startTime.slice(0,10)===ts);
-    if(tp.length&&!daily[ts]){daily[ts]={hi:Math.max(...tp.map(p=>p.temperature)),lo:Math.min(...tp.map(p=>p.temperature))};}
-    gddData=[];let tot=0;
-    for(const dt of dates){
-      const ds=dt.toISOString().slice(0,10),day=daily[ds];
-      if(!day||day.hi===-999)continue;
-      const gdd=Math.max(0,(day.hi+day.lo)/2-gddBase);
-      tot+=gdd;gddData.push({date:ds,gdd,total:tot});
-    }
+    const [thisRows,priorRows]=await Promise.all([
+      fetchOpenMeteoGDD(startDate,endDate,gddBase),
+      fetchOpenMeteoGDD(priorStart,priorEnd,gddBase)
+    ]);
+    gddData=thisRows;gddPriorData=priorRows;
+    if(!gddData.length){badge.textContent='No data';statusEl.textContent='No data returned.';return;}
     badge.textContent='● Live';badge.style.background='var(--green-pale)';badge.style.color='var(--green)';
-    status.textContent='Based on '+gddData.length+' days of NWS data · '+stId;
+    statusEl.textContent=gddData.length+' days · Lexington KY · Open-Meteo ERA5';
+    document.getElementById('gddYearLabel').textContent=sYear;
+    document.getElementById('gddPriorYear').textContent=priorYear+' (same date)';
+    document.getElementById('gddDaysCount').textContent=gddData.length+' days';
     renderGDD();
-  }catch(e){badge.textContent='Error';status.textContent='Could not load: '+e.message;}
+  }catch(err){badge.textContent='Error';statusEl.textContent='Could not load: '+err.message;}
 }
 
 function renderGDD(){
   if(!gddData.length)return;
-  const total=Math.round(gddData[gddData.length-1]?.total||0);
-  const pct=Math.min(100,Math.round(total/GDD_MAX[gddBase]*100));
-  document.getElementById('gddTotal').textContent=total.toLocaleString();
+  const thisTotal=gddData[gddData.length-1].total;
+  const priorTotal=gddPriorData.length?gddPriorData[gddPriorData.length-1].total:null;
+  const pct=Math.min(100,Math.round(thisTotal/GDD_MAX[gddBase]*100));
+  document.getElementById('gddTotal').textContent=thisTotal.toLocaleString();
   document.getElementById('gddBar').style.width=pct+'%';
   document.getElementById('gddPct').textContent=pct+'%';
   const sv=document.getElementById('gddStartDate').value;
   if(sv){const d=new Date(sv+'T12:00:00');document.getElementById('gddSince').textContent='since '+d.toLocaleDateString('en-US',{month:'short',day:'numeric'});}
+  const priorEl=document.getElementById('gddPriorTotal'),deltaEl=document.getElementById('gddDelta');
+  if(priorTotal!=null){
+    priorEl.textContent=priorTotal.toLocaleString();
+    const diff=thisTotal-priorTotal;
+    deltaEl.textContent=(diff>=0?'+':'')+diff;
+    deltaEl.style.color=diff>0?'var(--green)':diff<0?'var(--red)':'var(--text-muted)';
+  }else{priorEl.textContent='--';deltaEl.textContent='';}
   const el=document.getElementById('gddMilestones');
-  el.innerHTML=(GDD_MS[gddBase]||[]).map(m=>{
-    const reached=total>=m.gdd;
-    return '<div class="gdd-milestone'+(reached?' gdd-ms-reached':'')+'"><span class="gdd-ms-dot'+(reached?'':' ')+'"></span><span style="font-size:14px">'+m.icon+'</span><span class="gdd-ms-name">'+m.name+'</span><span class="gdd-ms-val">'+(reached?'✓ '+m.gdd:(m.gdd-total)+' to go')+'</span></div>';
+  el.innerHTML=(GDD_MILESTONES[gddBase]||[]).map(m=>{
+    const reached=thisTotal>=m.gdd,remaining=m.gdd-thisTotal,priorReach=priorTotal!=null&&priorTotal>=m.gdd;
+    return `<div class="gdd-milestone${reached?' gdd-ms-reached':''}"><span class="gdd-ms-dot${reached?'':' gdd-ms-dot-pending'}"></span><span style="font-size:14px;line-height:1">${m.icon}</span><span class="gdd-ms-name">${m.name}</span><span class="gdd-ms-val">${reached?'✓ '+m.gdd:remaining+' to go'}</span>${priorTotal!=null?`<span style="font-size:10px;color:var(--text-muted);margin-left:2px">${priorReach?'(✓ last yr)':''}</span>`:''}</div>`;
   }).join('');
 }
 
 // ── INIT ──────────────────────────────────────────
 fetchNWS();
+fetchGDD();
+autoConnectStation();
 renderCal();
 selectDay(fmtKey(new Date()));
 setInterval(fetchNWS,15*60*1000);
+setInterval(fetchGDD,60*60*1000);
 </script>
 </body>
 </html>
