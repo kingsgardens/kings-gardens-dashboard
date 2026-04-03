@@ -1255,267 +1255,16 @@ setInterval(fetchGDD,60*60*1000);return false">Refresh now</a> &nbsp;ÃÂ·&nb
 </div>
 
 <script>
-// Ã¢ÂÂÃ¢ÂÂ CLOCK Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
-// Ã¢ÂÂÃ¢ÂÂ NWS WEATHER Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
-function wxIcon(t){for(const[k,v]of Object.entries(ICONS))if(t.includes(k))return v;return'Ã°ÂÂÂ¡Ã¯Â¸Â'}
-
-// Ã¢ÂÂÃ¢ÂÂ ALERT CARD Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
-let alertActive=false, postComments=[];
-
-function severityStyle(name,lo){
-  const e=(name||'').toLowerCase();
-  if(e.includes('hard freeze')||lo<=28) return{bg:'#5c0a0a',hdr:'#8b1111',icon:'Ã°ÂÂ§Â',pulse:true};
-  if(e.includes('freeze warning')||lo<=32) return{bg:'#7a1111',hdr:'#b03030',icon:'Ã¢ÂÂÃ¯Â¸Â',pulse:true};
-  if(e.includes('freeze watch'))          return{bg:'#6b3300',hdr:'#9e5200',icon:'Ã¢ÂÂÃ¯Â¸Â',pulse:false};
-  return                                        {bg:'#1d3557',hdr:'#2e5a8a',icon:'Ã°ÂÂÂ¡Ã¯Â¸Â',pulse:false};
-}
-
-function showAlert({name,lo,headline,desc,exp}){
-  alertActive=true;
-  const s=severityStyle(name,lo);
-  const shortDesc=(desc||'').length>420?desc.slice(0,420).replace(/\s\S+$/,'')+'Ã¢ÂÂ¦':desc;
-  document.getElementById('alertSlot').innerHTML=`
-    <div class="alert-card${s.pulse?' pulse':''}" style="background:${s.bg};border:2.5px solid ${s.hdr}">
-      <div class="alert-top" style="background:${s.hdr}">
-        <div class="alert-top-left">
-          <div class="alert-icon-big">${s.icon}</div>
-          <div>
-            <div class="alert-event">${name.toUpperCase()}</div>
-            <div class="alert-source">National Weather Service &nbsp;ÃÂ·&nbsp; Lexington, KY 40515${exp?'&nbsp;ÃÂ·&nbsp; Expires '+exp:''}</div>
-          </div>
-        </div>
-        ${lo!=null?`<div class="alert-low-pill"><div class="alert-low-label">Tonight's Low</div><div class="alert-low-temp">${lo}ÃÂ°F</div></div>`:''}
-      </div>
-      <div class="alert-body">
-        <div class="alert-divider"></div>
-        ${headline?`<div class="alert-headline">${headline}</div>`:''}
-        ${shortDesc?`<div class="alert-desc">${shortDesc}</div>`:''}
-        <div class="alert-tags">
-          <span class="alert-tag">Ã°ÂÂÂ± Cover tender annuals &amp; perennials</span>
-          <span class="alert-tag">Ã°ÂÂÂ¡Ã¯Â¸Â Check greenhouse heaters</span>
-          <span class="alert-tag">Ã°ÂÂÂ§ Protect irrigation &amp; pipes</span>
-          <span class="alert-tag">Ã°ÂÂªÂ´ Move potted tropicals inside</span>
-        </div>
-      </div>
-    </div>`;
-  if(!document.getElementById('commentCard')) injectCommentCard();
-}
-
-function clearAlert(){
-  alertActive=false;
-  document.getElementById('alertSlot').innerHTML='';
-  if(postComments.length===0) document.getElementById('commentSlot').innerHTML='';
-}
-
-function injectCommentCard(){
-  document.getElementById('commentSlot').innerHTML=`
-    <div class="comment-card" id="commentCard">
-      <div class="card-header">
-        <span class="card-title">Ã°ÂÂÂ Frost / Freeze Event Ã¢ÂÂ Staff Observation Log</span>
-        <span class="badge badge-red">Log your observations</span>
-      </div>
-      <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.65">
-        Record plant damage, actions taken, areas affected, greenhouse temps, and anything else worth noting during or after this event. Entries are timestamped automatically.
-      </p>
-      <div class="comment-list" id="commentList">
-        <div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:4px 0">No observations logged yet.</div>
-      </div>
-      <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
-        <input id="commentAuthor" placeholder="Your name" style="width:160px">
-        <span style="font-size:11px;color:var(--text-muted)">then type your note Ã¢ÂÂ</span>
-      </div>
-      <div class="comment-input-row">
-        <textarea id="commentInput" placeholder="e.g. Covered flats in greenhouse 2. Heater holding at 48ÃÂ°F. Some wilting on exposed impatiens in lot C. Moved citrus inside."></textarea>
-        <button class="btn-green" onclick="addComment()" style="height:56px;align-self:flex-end;white-space:nowrap;padding:0 16px">Log Note</button>
-      </div>
-    </div>`;
-  renderComments();
-}
-
-function addComment(){
-  const ae=document.getElementById('commentAuthor'),ie=document.getElementById('commentInput');
-  if(!ae||!ie)return;
-  const body=ie.value.trim();
-  if(!body){ie.focus();return;}
-  postComments.push({who:ae.value.trim()||'Staff',body,ts:new Date().toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})});
-  ie.value='';
-  renderComments();
-}
-
-function renderComments(){
-  const el=document.getElementById('commentList');
-  if(!el)return;
-  if(!postComments.length){el.innerHTML='<div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:4px 0">No observations logged yet.</div>';return;}
-  el.innerHTML=postComments.map(c=>`<div class="comment-item"><div class="comment-meta">${c.who} &nbsp;ÃÂ·&nbsp; ${c.ts}</div><div class="comment-body">${c.body}</div></div>`).join('');
-  el.scrollTop=el.scrollHeight;
-}
-
-function demoAlert(){
-  showAlert({name:'Freeze Warning',lo:29,
-    headline:'Freeze Warning in effect from midnight tonight through 9 AM EST Thursday.',
-    desc:'A hard freeze is likely overnight with minimum temperatures dropping into the upper 20s. Frost-sensitive vegetation may be killed outright. Tender plants should be covered or brought indoors. Outdoor pipes and irrigation lines should be drained or insulated. Ensure greenhouse heating systems are set no lower than 40ÃÂ°F.',
-    exp:'Thu, Mar 27 Ã¢ÂÂ 9:00 AM EST'});
-}
-function demoGH(){
-  showGH([
-    'Ã°ÂÂÂ¡Ã¯Â¸Â Temp dropping to 42ÃÂ°F (Tonight)',
-    'Ã¢ÂÂÃ¯Â¸Â Severe Thunderstorm Watch in effect',
-    'Ã°ÂÂÂ¨ Wind gusts up to 52 mph (This Evening)'
-  ]);
-}
-function demoClear(){ clearAlert(); clearGH(); }
-
-// Ã¢ÂÂÃ¢ÂÂ GREENHOUSE WARNING CARD Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
-function showGH(reasons){
-  document.getElementById('ghSlot').innerHTML=`
-    <div class="gh-card">
-      <div class="gh-top">
-        <div class="gh-top-left">
-          <div class="gh-icon">Ã°ÂÂÂ¡</div>
-          <div>
-            <div class="gh-headline">CLOSE ALL GREENHOUSES TONIGHT</div>
-            <div class="gh-sub">Weather conditions require greenhouse closure Ã¢ÂÂ see reasons below</div>
-          </div>
-        </div>
-      </div>
-      <div class="gh-body">
-        <div class="gh-divider"></div>
-        <div class="gh-reasons">
-          ${reasons.map(r=>`<span class="gh-reason">${r}</span>`).join('')}
-        </div>
-        <div class="gh-note">Close and latch all vents, doors, and roll-up sides before end of day. Verify heating systems are operational. Check back on this dashboard for updates.</div>
-      </div>
-    </div>`;
-}
-
-function clearGH(){
-  document.getElementById('ghSlot').innerHTML='';
-}
-
-// Ã¢ÂÂÃ¢ÂÂ AMBIENT WEATHER STATION Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
-function deg2dir(d){return['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(d/22.5)%16]}
-
-async function connectStation(){
-  const api=document.getElementById('awApi').value.trim(),app=document.getElementById('awApp').value.trim();
-  const st=document.getElementById('stStatus');
-  if(!api||!app){st.textContent='Ã¢ÂÂ  Enter both keys first.';return;}
-  st.textContent='ConnectingÃ¢ÂÂ¦';
-  try{
-    const data=await(await fetch(`https://api.ambientweather.net/v1/devices?applicationKey=${app}&apiKey=${api}`)).json();
-    if(!Array.isArray(data)||!data.length){st.textContent='Ã¢ÂÂ  No devices found.';return;}
-    localStorage.setItem('kgAwApi',api);
-    localStorage.setItem('kgAwApp',app);
-    applyStation(data[0].lastData);
-    const ts=new Date(data[0].lastData.dateutc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-    st.textContent=`Ã¢ÂÂ Connected ÃÂ· last update ${ts} ÃÂ· keys saved`;
-    startStationRefresh(api,app);
-  }catch(e){st.textContent='Ã¢ÂÂ  Error: '+e.message;}
-}
-
-function startStationRefresh(api,app){
-  const st=document.getElementById('stStatus');
-  clearInterval(window._stInt);
-  window._stInt=setInterval(async()=>{
-    try{
-      const d2=await(await fetch(`https://api.ambientweather.net/v1/devices?applicationKey=${app}&apiKey=${api}`)).json();
-      if(Array.isArray(d2)&&d2.length){applyStation(d2[0].lastData);const ts2=new Date(d2[0].lastData.dateutc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});st.textContent=`Ã¢ÂÂ Connected ÃÂ· last update ${ts2}`;}
-    }catch(e){st.textContent='Ã¢ÂÂ  Refresh error: '+e.message;}
-  },5*60*1000);
-}
-
-function autoConnectStation(){
-  const api=localStorage.getItem('kgAwApi'),app=localStorage.getItem('kgAwApp');
-  if(!api||!app)return;
-  document.getElementById('awApi').value=api;
-  document.getElementById('awApp').value=app;
-  const st=document.getElementById('stStatus');
-  st.textContent='Auto-connecting with saved keysÃ¢ÂÂ¦';
-  fetch(`https://api.ambientweather.net/v1/devices?applicationKey=${app}&apiKey=${api}`)
-    .then(r=>r.json())
-    .then(data=>{
-      if(!Array.isArray(data)||!data.length){st.textContent='Ã¢ÂÂ  No devices found.';return;}
-      applyStation(data[0].lastData);
-      const ts=new Date(data[0].lastData.dateutc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-      st.textContent=`Ã¢ÂÂ Auto-connected ÃÂ· last update ${ts}`;
-      startStationRefresh(api,app);
-    })
-    .catch(e=>{st.textContent='Ã¢ÂÂ  Auto-connect failed: '+e.message;});
-}
-
-function clearStationKeys(){
-  localStorage.removeItem('kgAwApi');
-  localStorage.removeItem('kgAwApp');
-  document.getElementById('awApi').value='';
-  document.getElementById('awApp').value='';
-  document.getElementById('stStatus').textContent='Keys cleared. Enter new keys to reconnect.';
-  clearInterval(window._stInt);
-}
-
-function applyStation(d){setStation(d.tempf??null,d.humidity??null,d.windspeedmph??null,d.winddir!=null?deg2dir(d.winddir):null,d.dailyrainin??null)}
-
-function setStation(t,h,w,wd,r){
-  document.getElementById('st-temp').textContent=t!=null?Math.round(t)+'ÃÂ°F':'--ÃÂ°F';
-  document.getElementById('st-temp-sub').textContent=t!=null?(t<=32?'Ã¢ÂÂ Ã¯Â¸Â At/below freezing':t<=36?'Ã¢ÂÂ Ã¯Â¸Â Frost risk':'Normal'):'Ã¢ÂÂ';
-  document.getElementById('st-hum').textContent=h!=null?Math.round(h)+'%':'--%';
-  document.getElementById('st-wind').textContent=w!=null?Math.round(w)+' mph':'-- mph';
-  document.getElementById('st-wind-dir').textContent=wd||'Ã¢ÂÂ';
-  document.getElementById('st-rain').textContent=r!=null?r.toFixed(2)+' in':'-- in';
-}
-
-function manualStation(){
-  const t=parseFloat(document.getElementById('m-temp').value),h=parseFloat(document.getElementById('m-hum').value);
-  const w=parseFloat(document.getElementById('m-wind').value),r=parseFloat(document.getElementById('m-rain').value);
-  setStation(isNaN(t)?null:t,isNaN(h)?null:h,isNaN(w)?null:w,null,isNaN(r)?null:r);
-}
-
-// Ã¢ÂÂÃ¢ÂÂ STAFF MESSAGE Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
-function postMessage(){
-  const v=document.getElementById('msgInput').value.trim();
-  if(!v)return;
-  document.getElementById('msgBody').textContent=v;
-  document.getElementById('msgInput').value='';
-  document.getElementById('msgTs').textContent='Updated '+new Date().toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
-}
-
-// Ã¢ÂÂÃ¢ÂÂ DELIVERY CALENDAR Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
-let calView=new Date(),calSel=null,calEvs={};
-function renderEvList(){
-  const el=document.getElementById('eventList'),evs=calEvs[calSel]||[];
-  if(!evs.length){el.innerHTML='<div style="font-size:12px;color:var(--text-muted)">No deliveries scheduled for this date.</div>';return;}
-  const dc={delivery:'dot-delivery',vendor:'dot-vendor',misc:'dot-misc'};
-  el.innerHTML=evs.map((e,i)=>`<div class="event-item"><span class="ev-dot ${dc[e.type]||'dot-misc'}"></span><span class="ev-name">${e.name}</span><span class="ev-time">${e.time}</span><span class="ev-del" onclick="deleteEvent(${i})" title="Remove">Ã¢ÂÂ</span></div>`).join('');
-}
-
-function addEvent(){
-  if(!calSel){alert('Select a date first.');return;}
-  const name=document.getElementById('evName').value.trim();
-  if(!name)return;
-  const time=document.getElementById('evTime').value.trim(),type=document.getElementById('evType').value;
-  if(!calEvs[calSel])calEvs[calSel]=[];
-  calEvs[calSel].push({name,time,type});
-  document.getElementById('evName').value='';document.getElementById('evTime').value='';
-  renderCal();renderEvList();
-}
-
-function deleteEvent(i){calEvs[calSel].splice(i,1);renderCal();renderEvList()}
-
-
-// Ã¢ÂÂÃ¢ÂÂ GROWING DEGREE DAYS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
-// Source: Open-Meteo ERA5 reanalysis Ã¢ÂÂ free, no API key, full CORS.
-// Matches UK Ag Weather Center values closely (verified 226 vs 226).
-
-let gddBase=50, gddData=[], gddPriorData=[];
-
-// ── AUTH (Firebase-backed) ────────────────────────
-// Users stored in Firestore 'users' collection keyed by email hash
-// Session stored in localStorage for tab persistence
-
+// ── AUTH / LOGIN (Firebase-backed) ────────────────
 function simpleHash(str){let h=0;for(let i=0;i<str.length;i++)h=(Math.imul(31,h)+str.charCodeAt(i))|0;return h.toString(36);}
-
-function getCurrentUser(){
-  try{return JSON.parse(localStorage.getItem('kgCurrentUser')||'null');}catch(e){return null;}
+function getCurrentUser(){try{return JSON.parse(localStorage.getItem('kgCurrentUser')||'null');}catch(e){return null;}}
+function showLoginTab(tab){
+  document.getElementById('formSignIn').style.display=tab==='signin'?'':'none';
+  document.getElementById('formRegister').style.display=tab==='register'?'':'none';
+  document.getElementById('tabSignIn').classList.toggle('active',tab==='signin');
+  document.getElementById('tabRegister').classList.toggle('active',tab==='register');
+  document.getElementById('loginErr').textContent='';
 }
-
 async function doSignIn(){
   const email=document.getElementById('siEmail').value.trim().toLowerCase();
   const pass=document.getElementById('siPass').value;
@@ -1524,29 +1273,15 @@ async function doSignIn(){
   errEl.textContent='Signing in...';
   try{
     if(window.__db){
-      const {doc,getDoc}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const {doc,getDoc}=window.__fs;
       const snap=await getDoc(doc(window.__db,'users',simpleHash(email)));
-      if(!snap.exists()||snap.data().passHash!==simpleHash(pass)){
-        // Fall back to localStorage users for backwards compat
-        const lsUsers=JSON.parse(localStorage.getItem('kgUsers')||'[]');
-        const lsUser=lsUsers.find(u=>u.email===email&&u.passHash===simpleHash(pass));
-        if(!lsUser){errEl.textContent='Email or password not found.';return;}
-        onLoggedIn({email:lsUser.email,name:lsUser.name});
-        return;
-      }
+      if(!snap.exists()||snap.data().passHash!==simpleHash(pass)){errEl.textContent='Email or password not found.';return;}
       const data=snap.data();
       localStorage.setItem('kgCurrentUser',JSON.stringify({email,name:data.name}));
       onLoggedIn({email,name:data.name});
-    } else {
-      const users=JSON.parse(localStorage.getItem('kgUsers')||'[]');
-      const user=users.find(u=>u.email===email&&u.passHash===simpleHash(pass));
-      if(!user){errEl.textContent='Email or password not found.';return;}
-      localStorage.setItem('kgCurrentUser',JSON.stringify({email:user.email,name:user.name}));
-      onLoggedIn(user);
-    }
-  }catch(e){errEl.textContent='Sign in error: '+e.message;}
+    }else{errEl.textContent='Loading, try again in a moment.';}
+  }catch(e){errEl.textContent='Error: '+e.message;}
 }
-
 async function doRegister(){
   const name=document.getElementById('regName').value.trim();
   const email=document.getElementById('regEmail').value.trim().toLowerCase();
@@ -1557,19 +1292,124 @@ async function doRegister(){
   errEl.textContent='Creating account...';
   try{
     if(window.__db){
-      const {doc,getDoc,setDoc}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const {doc,getDoc,setDoc}=window.__fs;
       const existing=await getDoc(doc(window.__db,'users',simpleHash(email)));
       if(existing.exists()){errEl.textContent='An account with that email already exists.';return;}
       await setDoc(doc(window.__db,'users',simpleHash(email)),{email,name,passHash:simpleHash(pass),createdAt:new Date().toISOString()});
-    } else {
-      const users=JSON.parse(localStorage.getItem('kgUsers')||'[]');
-      if(users.find(u=>u.email===email)){errEl.textContent='An account with that email already exists.';return;}
-      users.push({email,name,passHash:simpleHash(pass)});
-      localStorage.setItem('kgUsers',JSON.stringify(users));
-    }
-    localStorage.setItem('kgCurrentUser',JSON.stringify({email,name}));
-    onLoggedIn({email,name});
-  }catch(e){errEl.textContent='Register error: '+e.message;}
+      localStorage.setItem('kgCurrentUser',JSON.stringify({email,name}));
+      onLoggedIn({email,name});
+    }else{errEl.textContent='Loading, try again in a moment.';}
+  }catch(e){errEl.textContent='Error: '+e.message;}
+}
+function onLoggedIn(user){
+  document.getElementById('loginOverlay').style.display='none';
+  document.getElementById('userPill').style.display='flex';
+  document.getElementById('userName').textContent=user.name;
+  document.getElementById('userInitial').textContent=user.name.charAt(0).toUpperCase();
+  window._currentUser=user;
+  if(typeof bbRender==='function')bbRender();
+}
+function doSignOut(){
+  if(!confirm('Sign out of the dashboard?'))return;
+  localStorage.removeItem('kgCurrentUser');
+  window._currentUser=null;
+  document.getElementById('loginOverlay').style.display='flex';
+  document.getElementById('userPill').style.display='none';
+  document.getElementById('siEmail').value='';
+  document.getElementById('siPass').value='';
+  document.getElementById('loginErr').textContent='';
+  showLoginTab('signin');
+}
+function initAuth(){const user=getCurrentUser();if(user)onLoggedIn(user);}
+
+// ── TEAM BULLETIN BOARD (Firebase) ────────────────
+function bbPost(){
+  const ta=document.getElementById('bbInput');
+  const body=ta.value.trim();
+  if(!body){ta.focus();return;}
+  const user=window._currentUser;
+  if(!window.__db){alert('Loading, try again.');return;}
+  const {collection,addDoc,serverTimestamp}=window.__fs;
+  addDoc(collection(window.__db,'bulletin_board'),{author:user?user.name:'Staff',body,ts:serverTimestamp()}).catch(e=>console.error('bbPost',e));
+  ta.value='';
+}
+function bbDelete(id){
+  if(!window.__db)return;
+  const {doc,deleteDoc}=window.__fs;
+  deleteDoc(doc(window.__db,'bulletin_board',id)).catch(e=>console.error('bbDelete',e));
+}
+function bbRender(){
+  const el=document.getElementById('bbMessages');if(!el)return;
+  const msgs=window.__bbMsgs||[];
+  if(!msgs.length){el.innerHTML='<div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:4px 0">No messages yet. Be the first to post!</div>';return;}
+  const user=window._currentUser;
+  el.innerHTML=msgs.map(function(m){
+    const canDel=user&&(user.name===m.author||user.email==='wes@kingsgardens.com');
+    const tsStr=m.ts&&m.ts.toDate?m.ts.toDate().toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):m.ts||'';
+    const del=canDel?('<span class="bb-msg-del" onclick="bbDelete(''+m.id+'')" title="Delete">&#10005;</span>'):'';
+    return '<div class="bb-msg"><div class="bb-msg-header"><span class="bb-msg-author">'+m.author+'</span><span style="display:flex;align-items:center;gap:4px"><span class="bb-msg-time">'+tsStr+'</span>'+del+'</span></div><div class="bb-msg-body">'+m.body+'</div></div>';
+  }).join('');
 }
 
+// ── OUTDOOR WORK CONDITIONS ────────────────────────
+function renderOutdoorConditions(cur,hrPeriods){
+  const statusEl=document.getElementById('ocStatus');if(!statusEl)return;
+  const temp=cur.temperature,hum=cur.relativeHumidity?.value;
+  let hiVal='--',hiSub='—',hiClass='';
+  if(temp!=null&&hum!=null){
+    let hi=temp;
+    if(temp>=80){hi=-42.379+2.04901523*temp+10.14333127*hum-0.22475541*temp*hum-0.00683783*temp*temp-0.05481717*hum*hum+0.00122874*temp*temp*hum+0.00085282*temp*hum*hum-0.00000199*temp*temp*hum*hum;hi=Math.round(hi);}
+    hiVal=hi+'°F';
+    if(hi>=103){hiSub='⚠️ Danger';hiClass='bad';}else if(hi>=91){hiSub='⚠️ Extreme Caution';hiClass='warn';}else if(hi>=80){hiSub='Caution';hiClass='warn';}else{hiSub='Normal';hiClass='good';}
+  }
+  const now=new Date(),hr=now.getHours(),mo=now.getMonth()+1;
+  let uvEst=0;
+  if(hr>=10&&hr<=16){const sf=[2,3,5,7,9,10,10,9,7,5,3,2][mo-1];const tf=1-Math.abs(hr-13)*0.15;uvEst=Math.round(sf*Math.max(0.3,tf));const fc=(cur.shortForecast||'').toLowerCase();if(fc.includes('cloudy')||fc.includes('overcast'))uvEst=Math.round(uvEst*0.4);else if(fc.includes('partly'))uvEst=Math.round(uvEst*0.7);}
+  let uvSub='Low',uvClass='good';
+  if(uvEst>=11){uvSub='⚠️ Extreme';uvClass='bad';}else if(uvEst>=8){uvSub='⚠️ Very High';uvClass='bad';}else if(uvEst>=6){uvSub='⚠️ High';uvClass='warn';}else if(uvEst>=3){uvSub='Moderate';uvClass='warn';}
+  const next24=hrPeriods.slice(0,24);
+  const maxPrecip=Math.max(...next24.map(p=>p.probabilityOfPrecipitation?.value??0));
+  const rainClass=maxPrecip>=60?'bad':maxPrecip>=30?'warn':'good';
+  const windNow=parseInt((cur.windSpeed||'0').match(/\d+/)?.[0]||'0');
+  const precipNow=cur.probabilityOfPrecipitation?.value??0;
+  const sprayOk=windNow<10&&precipNow<20;
+  const windClass=windNow>=30?'bad':windNow>=20?'warn':'good';
+  function sunTimes(d){const doy=Math.round((d-new Date(d.getFullYear(),0,1))/86400000)+1;const B=(360/365)*(doy-81)*Math.PI/180;const EoT=9.87*Math.sin(2*B)-7.53*Math.cos(B)-1.5*Math.sin(B);const lat=38.04*Math.PI/180;const decl=23.45*Math.sin((360*(284+doy)/365)*Math.PI/180)*Math.PI/180;const HA=Math.acos(-Math.tan(lat)*Math.tan(decl))*180/Math.PI;const offset=d.getTimezoneOffset()===240?-4:-5;const noon=12-EoT/60-((-84.5-offset*15)/15);return{rise:noon-HA/15,set:noon+HA/15};}
+  const {rise,set}=sunTimes(now);const nowH=now.getHours()+now.getMinutes()/60;
+  let dlVal='--',dlSub='—',dlClass='';
+  if(nowH<rise){dlVal=Math.floor(rise)+':'+(String(Math.round((rise%1)*60))).padStart(2,'0')+' AM';dlSub='Sunrise time';}
+  else if(nowH>set){dlVal='After dark';dlSub='Sun has set';dlClass='bad';}
+  else{const ml=Math.round((set-nowH)*60);const h2=Math.floor(ml/60),mn=ml%60;dlVal=h2>0?h2+'h '+mn+'m':mn+'m';dlSub=h2<1?'⚠️ Losing light':'Until sunset';dlClass=h2<1?'warn':'good';}
+  document.getElementById('ocGrid').innerHTML=
+    '<div class="oc-box '+hiClass+'"><div class="oc-label">Heat Index</div><div class="oc-val">'+hiVal+'</div><div class="oc-sub">'+hiSub+'</div></div>'+
+    '<div class="oc-box '+uvClass+'"><div class="oc-label">UV Index</div><div class="oc-val">'+uvEst+'</div><div class="oc-sub">'+uvSub+'</div></div>'+
+    '<div class="oc-box '+rainClass+'"><div class="oc-label">Rain Next 24h</div><div class="oc-val">'+maxPrecip+'%</div><div class="oc-sub">Max precip chance</div></div>'+
+    '<div class="oc-box '+(sprayOk?'good':'bad')+'"><div class="oc-label">Spray Window</div><div class="oc-val" style="font-size:16px;font-weight:600">'+(sprayOk?'✓ Open':'✗ Avoid')+'</div><div class="oc-sub">'+(sprayOk?'Good conditions':windNow>=10?'Wind too high':'Precip risk')+'</div></div>'+
+    '<div class="oc-box '+windClass+'"><div class="oc-label">Wind Now</div><div class="oc-val">'+windNow+' mph</div><div class="oc-sub">'+(cur.windDirection||'—')+'</div></div>'+
+    '<div class="oc-box '+dlClass+'"><div class="oc-label">Daylight Left</div><div class="oc-val" style="font-size:'+(dlVal.length>5?'14px':'20px')+'">'+dlVal+'</div><div class="oc-sub">'+dlSub+'</div></div>';
+  statusEl.textContent='Updated '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})+' · NWS + calc';
+}
 
+// ── STAFF MESSAGE (Firebase) ───────────────────────
+function postMessage(){
+  const v=document.getElementById('msgInput').value.trim();
+  if(!v)return;
+  document.getElementById('msgBody').textContent=v;
+  document.getElementById('msgInput').value='';
+  document.getElementById('msgTs').textContent='Updated '+new Date().toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+  if(window.__db){const {doc,setDoc,serverTimestamp}=window.__fs;setDoc(doc(window.__db,'config','staff_message'),{text:v,updatedAt:serverTimestamp()}).catch(e=>console.error('postMessage',e));}
+}
+
+// ── INIT ──────────────────────────────────────────
+initAuth();
+if(typeof fetchNWS==='function'){fetchNWS();}
+if(typeof fetchGDD==='function'){fetchGDD();}
+if(typeof autoConnectStation==='function'){autoConnectStation();}
+if(typeof autoConnectHydrawise==='function'){autoConnectHydrawise();}
+if(typeof renderCal==='function'){renderCal();}
+if(typeof selectDay==='function'){selectDay(fmtKey(new Date()));}
+setInterval(()=>{if(typeof fetchNWS==='function')fetchNWS();},15*60*1000);
+setInterval(()=>{if(typeof fetchGDD==='function')fetchGDD();},60*60*1000);
+</script>
+</body>
+</html>
