@@ -1256,142 +1256,8 @@ setInterval(fetchGDD,60*60*1000);return false">Refresh now</a> &nbsp;ÃÂ·&nb
 
 <script>
 // Ã¢ÂÂÃ¢ÂÂ CLOCK Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
-function tick(){
-  const n=new Date(),h=n.getHours(),m=n.getMinutes();
-  document.getElementById('clock').textContent=`${h%12||12}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`;
-  document.getElementById('dateLine').textContent=n.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-}
-setInterval(tick,1000); tick();
-
 // Ã¢ÂÂÃ¢ÂÂ NWS WEATHER Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
-const LAT=38.0406,LON=-84.5037,UA='KingsGardensDashboard/1.0';
-const ICONS={'Sunny':'Ã¢ÂÂÃ¯Â¸Â','Clear':'Ã¢ÂÂÃ¯Â¸Â','Partly Cloudy':'Ã¢ÂÂ','Mostly Cloudy':'Ã°ÂÂÂ¥Ã¯Â¸Â','Cloudy':'Ã¢ÂÂÃ¯Â¸Â','Overcast':'Ã¢ÂÂÃ¯Â¸Â','Rain':'Ã°ÂÂÂ§Ã¯Â¸Â','Showers':'Ã°ÂÂÂ¦Ã¯Â¸Â','Thunderstorm':'Ã¢ÂÂÃ¯Â¸Â','Snow':'Ã¢ÂÂÃ¯Â¸Â','Sleet':'Ã°ÂÂÂ¨Ã¯Â¸Â','Fog':'Ã°ÂÂÂ«Ã¯Â¸Â','Windy':'Ã°ÂÂÂ¨'};
 function wxIcon(t){for(const[k,v]of Object.entries(ICONS))if(t.includes(k))return v;return'Ã°ÂÂÂ¡Ã¯Â¸Â'}
-
-async function fetchNWS(){
-  const el=document.getElementById('nwsContent');
-  el.innerHTML='<span style="color:var(--text-muted);font-size:13px">RefreshingÃ¢ÂÂ¦</span>';
-  try{
-    const pt=await(await fetch(`https://api.weather.gov/points/${LAT},${LON}`,{headers:{'User-Agent':UA}})).json();
-    const pp=pt.properties;
-    const[fc,hr,al]=await Promise.all([
-      fetch(pp.forecast,{headers:{'User-Agent':UA}}).then(r=>r.json()),
-      fetch(pp.forecastHourly,{headers:{'User-Agent':UA}}).then(r=>r.json()),
-      fetch(`https://api.weather.gov/alerts/active?point=${LAT},${LON}`,{headers:{'User-Agent':UA}}).then(r=>r.json())
-    ]);
-    const periods=fc.properties.periods;
-    const cur=hr.properties.periods[0];
-    const dayP=periods.find(p=>p.isDaytime)||periods[0];
-    const niteP=periods.find(p=>!p.isDaytime)||periods[1];
-    const temp=cur.temperature,hi=dayP.temperature,lo=niteP.temperature;
-    const wind=cur.windSpeed||'--',wdir=cur.windDirection||'--';
-    const precip=cur.probabilityOfPrecipitation?.value;
-    const days5=periods.filter(p=>p.isDaytime).slice(0,5);
-
-    // Ã¢ÂÂÃ¢ÂÂ ALERT DETECTION Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
-    const frostAlerts=(al.features||[]).filter(f=>{
-      const ev=(f.properties?.event||'').toLowerCase();
-      return ev.includes('frost')||ev.includes('freeze');
-    });
-
-    if(frostAlerts.length>0){
-      // Real NWS frost/freeze alert Ã¢ÂÂ use the actual text
-      const p=frostAlerts[0].properties;
-      let exp='';
-      try{if(p.expires)exp=new Date(p.expires).toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'});}catch(e){}
-      showAlert({name:p.event,lo,headline:p.headline||p.event,desc:p.description||'',exp});
-    } else if(lo<=36){
-      // No formal alert but low is dangerous
-      const name=lo<=28?'Hard Freeze Warning':lo<=32?'Freeze Warning':'Frost Advisory';
-      const desc=lo<=32
-        ?`No formal NWS alert is active, but tonight's forecast low of ${lo}ÃÂ°F is at or below freezing. Cover all frost-sensitive plants, check greenhouse heaters, and drain exposed irrigation lines.`
-        :`No formal NWS alert is active, but tonight's forecast low of ${lo}ÃÂ°F is near frost threshold. Monitor tender plants and protect as needed.`;
-      showAlert({name,lo,headline:`Forecast low of ${lo}ÃÂ°F tonight Ã¢ÂÂ take precautions.`,desc,exp:''});
-    } else {
-      clearAlert();
-    }
-
-    // Ã¢ÂÂÃ¢ÂÂ GREENHOUSE WARNING CHECK Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
-    // Look ahead up to 18 hours of hourly periods
-    const hrPeriods = hr.properties.periods;
-    const next18 = hrPeriods.slice(0, 18);
-    const next12 = hrPeriods.slice(0, 12);
-
-    const ghReasons = [];
-
-    // 1. Any temp below 45ÃÂ°F in next 18 hours
-    const coldHour = next18.find(p => p.temperature <= 45);
-    if (coldHour) ghReasons.push(`Ã°ÂÂÂ¡Ã¯Â¸Â Temp dropping to ${coldHour.temperature}ÃÂ°F (${coldHour.name})`);
-
-    // 2. Severe thunderstorm in next 18 hours (forecast text check)
-    const stormHour = next18.find(p => {
-      const t = (p.shortForecast||'').toLowerCase();
-      return t.includes('thunderstorm') || t.includes('severe') || t.includes('tornado');
-    });
-    // Also check NWS severe alerts
-    const severeAlerts = (al.features||[]).filter(f => {
-      const ev = (f.properties?.event||'').toLowerCase();
-      return ev.includes('thunderstorm') || ev.includes('tornado') || ev.includes('severe');
-    });
-    if (stormHour) ghReasons.push(`Ã¢ÂÂÃ¯Â¸Â ${stormHour.shortForecast} expected (${stormHour.name})`);
-    else if (severeAlerts.length) ghReasons.push(`Ã¢ÂÂÃ¯Â¸Â ${severeAlerts[0].properties.event} in effect`);
-
-    // 3. Wind gusts above 45 mph in next 12 hours
-    const gustyHour = next12.find(p => {
-      const gs = p.windGust?.value;
-      if (gs != null) return gs >= 45; // NWS hourly windGust is in km/h
-      // fallback: parse windSpeed string like "40 to 55 mph"
-      const speeds = (p.windSpeed||'').match(/\d+/g);
-      if (speeds) return Math.max(...speeds.map(Number)) >= 45;
-      return false;
-    });
-    // NWS windGust is in km/h in the API Ã¢ÂÂ convert: 45 mph = ~72 km/h
-    const gustyHourMph = next12.find(p => {
-      const gs = p.windGust?.value;
-      if (gs != null) return gs >= 72;
-      const speeds = (p.windSpeed||'').match(/\d+/g);
-      if (speeds) return Math.max(...speeds.map(Number)) >= 45;
-      return false;
-    });
-    if (gustyHourMph) {
-      const mph = gustyHourMph.windGust?.value != null
-        ? Math.round(gustyHourMph.windGust.value * 0.621)
-        : '45+';
-      ghReasons.push(`Ã°ÂÂÂ¨ Wind gusts up to ${mph} mph (${gustyHourMph.name})`);
-    }
-
-    if (ghReasons.length > 0) {
-      showGH(ghReasons);
-    } else {
-      clearGH();
-    }
-    el.innerHTML=`
-      <div class="wx-top">
-        <div><div class="wx-temp">${temp}<sup>ÃÂ°F</sup></div></div>
-        <div style="padding-top:8px">
-          <div class="wx-desc">${cur.shortForecast}</div>
-          <div class="wx-note">Wind: ${wind} ${wdir} &nbsp;ÃÂ·&nbsp; Precip: ${precip!=null?precip+'%':'N/A'}</div>
-        </div>
-      </div>
-      <div class="wx-stats">
-        <div class="stat-box"><div class="stat-label">Today High</div><div class="stat-val">${hi}ÃÂ°F</div><div class="stat-sub">Daytime</div></div>
-        <div class="stat-box">
-          <div class="stat-label">Tonight Low</div>
-          <div class="stat-val" style="color:${lo<=32?'#991a1a':lo<=36?'#7a4f00':'inherit'}">${lo}ÃÂ°F</div>
-          <div class="stat-sub">${lo<=28?'Ã¢ÂÂ Ã¯Â¸Â Hard Freeze':lo<=32?'Ã¢ÂÂ Ã¯Â¸Â Freeze':lo<=36?'Ã¢ÂÂ Ã¯Â¸Â Frost Risk':'Ã¢ÂÂ Clear'}</div>
-        </div>
-        <div class="stat-box"><div class="stat-label">Wind</div><div class="stat-val" style="font-size:14px">${wind}</div><div class="stat-sub">${wdir}</div></div>
-        <div class="stat-box"><div class="stat-label">Precip Chance</div><div class="stat-val">${precip!=null?precip+'%':'--'}</div><div class="stat-sub">Probability</div></div>
-      </div>
-      <div class="forecast-strip">
-        ${days5.map(p=>`<div class="fc-day"><div class="fc-name">${p.name.slice(0,3)}</div><div class="fc-icon">${wxIcon(p.shortForecast)}</div><div class="fc-hi">${p.temperature}ÃÂ°</div><div class="fc-cond">${p.shortForecast.slice(0,12)}</div></div>`).join('')}
-      </div>`;
-    // Update outdoor work conditions
-    renderOutdoorConditions(cur, hrPeriods, lo);
-  }catch(err){
-    document.getElementById('nwsContent').innerHTML=`<div style="font-size:12px;color:var(--text-muted)">Could not load NWS data Ã¢ÂÂ check connection.<br><small style="opacity:.6">${err.message}</small></div>`;
-  }
-}
 
 // Ã¢ÂÂÃ¢ÂÂ ALERT CARD Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 let alertActive=false, postComments=[];
@@ -1613,24 +1479,6 @@ function postMessage(){
 
 // Ã¢ÂÂÃ¢ÂÂ DELIVERY CALENDAR Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 let calView=new Date(),calSel=null,calEvs={};
-function fmtKey(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
-function changeMonth(dir){calView=new Date(calView.getFullYear(),calView.getMonth()+dir,1);renderCal()}
-function selectDay(k){calSel=k;renderCal();const d=new Date(k+'T12:00:00');document.getElementById('calDateLbl').textContent=d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});renderEvList()}
-
-function renderCal(){
-  const y=calView.getFullYear(),m=calView.getMonth();
-  document.getElementById('calMonthLbl').textContent=calView.toLocaleDateString('en-US',{month:'long',year:'numeric'});
-  const fd=new Date(y,m,1).getDay(),dim=new Date(y,m+1,0).getDate(),tk=fmtKey(new Date());
-  let h=['S','M','T','W','T','F','S'].map(d=>`<div class="cal-dow">${d}</div>`).join('');
-  for(let i=0;i<fd;i++)h+='<div></div>';
-  for(let d=1;d<=dim;d++){
-    const k=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const c=['cal-day',k===tk?'today':'',k===calSel&&k!==tk?'selected':'',calEvs[k]?.length?'has-event':''].filter(Boolean).join(' ');
-    h+=`<div class="${c}" onclick="selectDay('${k}')">${d}</div>`;
-  }
-  document.getElementById('calGrid').innerHTML=h;
-}
-
 function renderEvList(){
   const el=document.getElementById('eventList'),evs=calEvs[calSel]||[];
   if(!evs.length){el.innerHTML='<div style="font-size:12px;color:var(--text-muted)">No deliveries scheduled for this date.</div>';return;}
@@ -1714,35 +1562,6 @@ async function fetchOpenMeteoGDD(start,end,base){
     rows.push({date:dates[i],maxT:Math.round(maxT[i]),minT:Math.round(minT[i]),gdd:Math.round(gdd*10)/10,total:Math.round(total)});
   }
   return rows;
-}
-
-async function fetchGDD(){
-  const badge=document.getElementById('gddBadge'),statusEl=document.getElementById('gddStatus');
-  badge.textContent='LoadingÃ¢ÂÂ¦';badge.style.background='';badge.style.color='';
-  const si=document.getElementById('gddStartDate');
-  const curYear=new Date().getFullYear();
-  if(!si.value)si.value=curYear+'-01-01';
-  const startDate=si.value;
-  const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
-  const endDate=yesterday.toISOString().slice(0,10);
-  const sYear=parseInt(startDate.slice(0,4)),priorYear=sYear-1;
-  const priorStart=priorYear+startDate.slice(4),priorEnd=priorYear+endDate.slice(4);
-  document.getElementById('gddDaysCount').textContent='';
-  statusEl.textContent='Fetching from Open-MeteoÃ¢ÂÂ¦';
-  try{
-    const [thisRows,priorRows]=await Promise.all([
-      fetchOpenMeteoGDD(startDate,endDate,gddBase),
-      fetchOpenMeteoGDD(priorStart,priorEnd,gddBase)
-    ]);
-    gddData=thisRows;gddPriorData=priorRows;
-    if(!gddData.length){badge.textContent='No data';statusEl.textContent='No data returned.';return;}
-    badge.textContent='Ã¢ÂÂ Live';badge.style.background='var(--green-pale)';badge.style.color='var(--green)';
-    statusEl.textContent=gddData.length+' days ÃÂ· Lexington KY ÃÂ· Open-Meteo ERA5';
-    document.getElementById('gddYearLabel').textContent=sYear;
-    document.getElementById('gddPriorYear').textContent=priorYear+' (same date)';
-    document.getElementById('gddDaysCount').textContent=gddData.length+' days';
-    renderGDD();
-  }catch(err){badge.textContent='Error';statusEl.textContent='Could not load: '+err.message;}
 }
 
 function renderGDD(){
