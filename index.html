@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>King's Gardens â Staff Dashboard</title>
+<title>King's Gardens Ã¢ÂÂ Staff Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -243,23 +243,93 @@ button:hover{opacity:.85}
 .oc-box.bad .oc-val{color:var(--red)}
 .oc-box.bad{background:var(--red-pale);border:1px solid #e0a0a0}
 .oc-status{font-size:11px;color:var(--text-muted);margin-top:4px;min-height:14px}
+
+/* IRRIGATION CARD */
+.irr-key-row{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.irr-key-row label{font-size:11px;color:var(--text-muted);white-space:nowrap;width:52px;flex-shrink:0}
+.irr-key-row input{flex:1;font-size:12px;padding:5px 8px}
+.irr-zones{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.irr-zone{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:var(--surface);font-size:12px}
+.irr-zone.active{background:#e8f4e8;border:1px solid var(--green-mid)}
+.irr-zone-num{width:22px;height:22px;border-radius:50%;background:var(--border);color:var(--text-muted);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.irr-zone.active .irr-zone-num{background:var(--green-mid);color:#fff}
+.irr-zone-name{flex:1;font-weight:500;color:var(--text)}
+.irr-zone-next{font-size:11px;color:var(--text-muted);text-align:right}
+.irr-zone-next.running{color:var(--green);font-weight:600}
+.irr-controller{font-size:11px;color:var(--text-muted);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.irr-dot{width:7px;height:7px;border-radius:50%;background:var(--border);flex-shrink:0}
+.irr-dot.online{background:var(--green-mid)}
 </style>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getFirestore, collection, doc, onSnapshot, addDoc, deleteDoc, setDoc, serverTimestamp, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBXNEYS46yIPY1z6p4KqCNTDFXiiIokuSI",
+    authDomain: "king-s-gardens.firebaseapp.com",
+    projectId: "king-s-gardens",
+    storageBucket: "king-s-gardens.firebasestorage.app",
+    messagingSenderId: "720962049379",
+    appId: "1:720962049379:web:e1d60cfff9edb2b5766f56"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  window.__db = db;
+  window.__fs = { collection, doc, onSnapshot, addDoc, deleteDoc, setDoc, serverTimestamp, query, orderBy, limit };
+
+  // Listen to bulletin board in real-time
+  function startBBListener() {
+    const q = window.__fs.query(
+      window.__fs.collection(window.__db, 'bulletin_board'),
+      window.__fs.orderBy('ts', 'desc'),
+      window.__fs.limit(50)
+    );
+    window.__bbUnsub = window.__fs.onSnapshot(q, snap => {
+      window.__bbFirebaseMsgs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if (typeof bbRenderFirebase === 'function') bbRenderFirebase();
+    });
+  }
+
+  // Listen to staff message in real-time
+  function startMsgListener() {
+    window.__fs.onSnapshot(
+      window.__fs.doc(window.__db, 'config', 'staff_message'),
+      snap => {
+        if (snap.exists()) {
+          const d = snap.data();
+          const el = document.getElementById('msgBody');
+          const ts = document.getElementById('msgTs');
+          if (el) el.textContent = d.text || '';
+          if (ts && d.updatedAt?.toDate) ts.textContent = 'Updated ' + d.updatedAt.toDate().toLocaleString('en-US', {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+        }
+      }
+    );
+  }
+
+  window.addEventListener('load', () => {
+    startBBListener();
+    startMsgListener();
+  });
+</script>
 </head>
 <body>
 
 <!-- LOGIN OVERLAY -->
 <div class="login-overlay" id="loginOverlay">
   <div class="login-box">
-    <div class="login-logo">🌿</div>
+    <div class="login-logo">ð¿</div>
     <div class="login-title">King's Gardens</div>
-    <div class="login-sub">Staff Dashboard — Sign in to continue</div>
+    <div class="login-sub">Staff Dashboard â Sign in to continue</div>
     <div class="login-tabs">
       <button class="login-tab active" id="tabSignIn" onclick="showLoginTab('signin')">Sign In</button>
       <button class="login-tab" id="tabRegister" onclick="showLoginTab('register')">Register</button>
     </div>
     <div id="formSignIn">
       <div class="login-field"><label>Email</label><input type="email" id="siEmail" placeholder="you@example.com"></div>
-      <div class="login-field"><label>Password</label><input type="password" id="siPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doSignIn()"></div>
+      <div class="login-field"><label>Password</label><input type="password" id="siPass" placeholder="â¢â¢â¢â¢â¢â¢â¢â¢" onkeydown="if(event.key==='Enter')doSignIn()"></div>
       <button class="btn-green login-btn" onclick="doSignIn()">Sign In</button>
     </div>
     <div id="formRegister" style="display:none">
@@ -274,17 +344,17 @@ button:hover{opacity:.85}
 
 <div class="header">
   <div class="header-left">
-    <div class="logo-mark">ð¿</div>
+    <div class="logo-mark">Ã°ÂÂÂ¿</div>
     <div>
       <div class="header-title">King's Gardens</div>
-      <div class="header-sub">Staff Dashboard &nbsp;Â·&nbsp; Lexington, KY 40515</div>
+      <div class="header-sub">Staff Dashboard &nbsp;ÃÂ·&nbsp; Lexington, KY 40515</div>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:20px">
-    <div id="userPill" class="login-user-pill" onclick="doSignOut()" title="Sign out" style="display:none"><div class="login-avatar" id="userInitial">?</div><span class="login-name" id="userName">Staff</span><span style="font-size:10px;color:var(--text-muted)">· Sign out</span></div>
+    <div id="userPill" class="login-user-pill" onclick="doSignOut()" title="Sign out" style="display:none"><div class="login-avatar" id="userInitial">?</div><span class="login-name" id="userName">Staff</span><span style="font-size:10px;color:var(--text-muted)">Â· Sign out</span></div>
     <div>
     <div class="clock" id="clock">--:-- --</div>
-    <div class="date-line" id="dateLine">Loadingâ¦</div>
+    <div class="date-line" id="dateLine">LoadingÃ¢ÂÂ¦</div>
   </div>
 </div>
 
@@ -299,10 +369,10 @@ button:hover{opacity:.85}
   <!-- NWS WEATHER -->
   <div class="card">
     <div class="card-header">
-      <span class="card-title">NWS Forecast â 40515</span>
-      <span class="badge badge-live">â Live</span>
+      <span class="card-title">NWS Forecast Ã¢ÂÂ 40515</span>
+      <span class="badge badge-live">Ã¢ÂÂ Live</span>
     </div>
-    <div id="nwsContent" style="color:var(--text-muted);font-size:13px;padding:8px 0">Fetching weatherâ¦</div>
+    <div id="nwsContent" style="color:var(--text-muted);font-size:13px;padding:8px 0">Fetching weatherÃ¢ÂÂ¦</div>
   </div>
 
   <!-- WEATHER STATION -->
@@ -312,13 +382,13 @@ button:hover{opacity:.85}
       <span class="badge badge-blue">Ambient WX</span>
     </div>
     <div class="st-grid">
-      <div class="st-box"><div class="st-label">Temp</div><div class="st-val" id="st-temp">--Â°F</div><div class="st-sub" id="st-temp-sub">â</div></div>
+      <div class="st-box"><div class="st-label">Temp</div><div class="st-val" id="st-temp">--ÃÂ°F</div><div class="st-sub" id="st-temp-sub">Ã¢ÂÂ</div></div>
       <div class="st-box"><div class="st-label">Humidity</div><div class="st-val" id="st-hum">--%</div><div class="st-sub">Relative</div></div>
-      <div class="st-box"><div class="st-label">Wind</div><div class="st-val" id="st-wind">-- mph</div><div class="st-sub" id="st-wind-dir">â</div></div>
+      <div class="st-box"><div class="st-label">Wind</div><div class="st-val" id="st-wind">-- mph</div><div class="st-sub" id="st-wind-dir">Ã¢ÂÂ</div></div>
       <div class="st-box"><div class="st-label">Rain Today</div><div class="st-val" id="st-rain">-- in</div><div class="st-sub">Accumulation</div></div>
     </div>
     <div style="margin-top:10px;padding:7px 10px;background:var(--blue-pale);border-radius:7px;font-size:11px;color:var(--blue)">
-      ð¡ Keys are saved in this browser automatically after connecting.
+      Ã°ÂÂÂ¡ Keys are saved in this browser automatically after connecting.
     </div>
     <div class="key-row"><label>API Key</label><input type="password" id="awApi" placeholder="Ambient API Key"><button class="btn-blue" onclick="connectStation()" style="white-space:nowrap">Connect</button></div>
     <div class="key-row"><label>App Key</label><input type="password" id="awApp" placeholder="Application Key"></div>
@@ -327,7 +397,7 @@ button:hover{opacity:.85}
     <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px">
       <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Manual entry</div>
       <div class="manual-row">
-        <input id="m-temp" placeholder="Temp Â°F">
+        <input id="m-temp" placeholder="Temp ÃÂ°F">
         <input id="m-hum"  placeholder="Hum %">
         <input id="m-wind" placeholder="Wind mph">
         <input id="m-rain" placeholder="Rain in">
@@ -342,9 +412,9 @@ button:hover{opacity:.85}
       <span class="card-title">Message to Staff</span>
       <span class="msg-ts" id="msgTs"></span>
     </div>
-    <div class="msg-body" id="msgBody">Welcome to King's Gardens! Check the board for today's tasks and have a great day. ð±</div>
+    <div class="msg-body" id="msgBody">Welcome to King's Gardens! Check the board for today's tasks and have a great day. Ã°ÂÂÂ±</div>
     <div class="msg-edit">
-      <textarea id="msgInput" placeholder="Type a new message for your teamâ¦"></textarea>
+      <textarea id="msgInput" placeholder="Type a new message for your teamÃ¢ÂÂ¦"></textarea>
       <button class="btn-green" onclick="postMessage()">Post</button>
     </div>
   </div>
@@ -358,13 +428,13 @@ button:hover{opacity:.85}
   <div class="card span2">
     <div class="card-header">
       <span class="card-title">Team Bulletin Board</span>
-      <span class="badge badge-live">● Live</span>
+      <span class="badge badge-live">â Live</span>
     </div>
     <div class="bb-messages" id="bbMessages">
       <div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:4px 0">No messages yet. Be the first to post!</div>
     </div>
     <div class="bb-compose">
-      <textarea id="bbInput" placeholder="Post an update, reminder, or note for the team…"></textarea>
+      <textarea id="bbInput" placeholder="Post an update, reminder, or note for the teamâ¦"></textarea>
       <button class="btn-green" onclick="bbPost()" style="height:56px;white-space:nowrap;padding:0 16px">Post</button>
     </div>
   </div>
@@ -373,24 +443,24 @@ button:hover{opacity:.85}
   <div class="card">
     <div class="card-header">
       <span class="card-title">Outdoor Work Conditions</span>
-      <span class="badge badge-blue">● NWS</span>
+      <span class="badge badge-blue">â NWS</span>
     </div>
     <div class="oc-grid" id="ocGrid">
-      <div class="oc-box"><div class="oc-label">Heat Index</div><div class="oc-val" id="oc-hi">--°F</div><div class="oc-sub" id="oc-hi-sub">—</div></div>
-      <div class="oc-box"><div class="oc-label">UV Index</div><div class="oc-val" id="oc-uv">--</div><div class="oc-sub" id="oc-uv-sub">—</div></div>
+      <div class="oc-box"><div class="oc-label">Heat Index</div><div class="oc-val" id="oc-hi">--Â°F</div><div class="oc-sub" id="oc-hi-sub">â</div></div>
+      <div class="oc-box"><div class="oc-label">UV Index</div><div class="oc-val" id="oc-uv">--</div><div class="oc-sub" id="oc-uv-sub">â</div></div>
       <div class="oc-box"><div class="oc-label">Rain Next 24h</div><div class="oc-val" id="oc-rain">--%</div><div class="oc-sub">Precip chance</div></div>
       <div class="oc-box"><div class="oc-label">Spray Window</div><div class="oc-val" id="oc-spray">--</div><div class="oc-sub">wind &lt;10mph, precip &lt;20%</div></div>
-      <div class="oc-box"><div class="oc-label">Wind Now</div><div class="oc-val" id="oc-wind">--</div><div class="oc-sub" id="oc-wind-sub">—</div></div>
-      <div class="oc-box"><div class="oc-label">Daylight Left</div><div class="oc-val" id="oc-daylight">--</div><div class="oc-sub" id="oc-daylight-sub">—</div></div>
+      <div class="oc-box"><div class="oc-label">Wind Now</div><div class="oc-val" id="oc-wind">--</div><div class="oc-sub" id="oc-wind-sub">â</div></div>
+      <div class="oc-box"><div class="oc-label">Daylight Left</div><div class="oc-val" id="oc-daylight">--</div><div class="oc-sub" id="oc-daylight-sub">â</div></div>
     </div>
-    <div class="oc-status" id="ocStatus">Waiting for NWS data…</div>
+    <div class="oc-status" id="ocStatus">Waiting for NWS dataâ¦</div>
   </div>
 
   <!-- GROWING DEGREE DAYS -->
   <div class="card span2" id="gddCard">
     <div class="card-header">
       <span class="card-title">Growing Degree Days</span>
-      <span class="badge badge-live" id="gddBadge">Loadingâ¦</span>
+      <span class="badge badge-live" id="gddBadge">LoadingÃ¢ÂÂ¦</span>
     </div>
     <div style="display:flex;gap:24px;align-items:flex-start">
       <div style="flex:1">
@@ -399,9 +469,9 @@ button:hover{opacity:.85}
           <div><div class="gdd-unit">GDD</div><div class="gdd-label" id="gddSince">since Jan 1</div></div>
         </div>
         <div class="gdd-bases">
-          <div class="gdd-base-btn active" id="gddBtn50" onclick="setGDDBase(50)">Base 50Â°F<br><span style="font-weight:400;font-size:10px">Ornamentals</span></div>
-          <div class="gdd-base-btn" id="gddBtn40" onclick="setGDDBase(40)">Base 40Â°F<br><span style="font-weight:400;font-size:10px">Cool season</span></div>
-          <div class="gdd-base-btn" id="gddBtn32" onclick="setGDDBase(32)">Base 32Â°F<br><span style="font-weight:400;font-size:10px">All growth</span></div>
+          <div class="gdd-base-btn active" id="gddBtn50" onclick="setGDDBase(50)">Base 50ÃÂ°F<br><span style="font-weight:400;font-size:10px">Ornamentals</span></div>
+          <div class="gdd-base-btn" id="gddBtn40" onclick="setGDDBase(40)">Base 40ÃÂ°F<br><span style="font-weight:400;font-size:10px">Cool season</span></div>
+          <div class="gdd-base-btn" id="gddBtn32" onclick="setGDDBase(32)">Base 32ÃÂ°F<br><span style="font-weight:400;font-size:10px">All growth</span></div>
         </div>
         <div class="gdd-bar-wrap">
           <div class="gdd-bar-label"><span>Season progress</span><span id="gddPct">0%</span></div>
@@ -422,6 +492,39 @@ button:hover{opacity:.85}
     </div>
   </div>
 
+
+  <!-- IRRIGATION SCHEDULE -->
+  <div class="card span2" id="irrCard">
+    <div class="card-header">
+      <span class="card-title">Irrigation Schedule — Hydrawise</span>
+      <span class="badge badge-blue" id="irrBadge">Not connected</span>
+    </div>
+    <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
+      <div style="flex:0 0 auto;min-width:200px">
+        <div class="irr-key-row">
+          <label>API Key</label>
+          <input type="password" id="hwKey" placeholder="Hydrawise API key">
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:6px">
+          <button class="btn-blue" onclick="connectHydrawise()" style="font-size:11px;padding:5px 12px;flex:1">Connect</button>
+          <button onclick="clearHydrawiseKey()" style="font-size:10px;background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:7px;padding:5px 8px;cursor:pointer">Clear</button>
+        </div>
+        <div class="irr-controller" id="irrController">
+          <span class="irr-dot" id="irrDot"></span>
+          <span id="irrControllerName">Enter API key to connect</span>
+        </div>
+        <div style="font-size:10px;color:var(--text-muted);line-height:1.6">
+          Get key: Hydrawise app<br>→ Menu → Account Details<br>→ Generate API Key
+        </div>
+      </div>
+      <div style="flex:1;min-width:260px">
+        <div class="irr-zones" id="irrZones">
+          <div style="font-size:12px;color:var(--text-muted);padding:8px 0">No zones loaded.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- DELIVERY CALENDAR -->
   <div class="card span3">
     <div class="card-header">
@@ -431,9 +534,9 @@ button:hover{opacity:.85}
     <div class="cal-wrap">
       <div class="cal-left">
         <div class="cal-nav">
-          <button class="cal-nav-btn" onclick="changeMonth(-1)">â¹</button>
+          <button class="cal-nav-btn" onclick="changeMonth(-1)">Ã¢ÂÂ¹</button>
           <span class="cal-month-lbl" id="calMonthLbl"></span>
-          <button class="cal-nav-btn" onclick="changeMonth(1)">âº</button>
+          <button class="cal-nav-btn" onclick="changeMonth(1)">Ã¢ÂÂº</button>
         </div>
         <div class="cal-grid" id="calGrid"></div>
       </div>
@@ -444,9 +547,9 @@ button:hover{opacity:.85}
           <input class="ev-name-in" id="evName" placeholder="Vendor / description">
           <input class="ev-time-in" id="evTime" placeholder="Time (e.g. 8am)">
           <select id="evType">
-            <option value="delivery">ð Delivery In</option>
-            <option value="vendor">ð­ Vendor Visit</option>
-            <option value="misc">ð Other</option>
+            <option value="delivery">Ã°ÂÂÂ Delivery In</option>
+            <option value="vendor">Ã°ÂÂÂ­ Vendor Visit</option>
+            <option value="misc">Ã°ÂÂÂ Other</option>
           </select>
           <button class="btn-blue" onclick="addEvent()">+ Add</button>
         </div>
@@ -457,7 +560,7 @@ button:hover{opacity:.85}
 </div>
 
 <div class="footer">
-  Weather auto-refreshes every 15 min &nbsp;Â·&nbsp;
+  Weather auto-refreshes every 15 min &nbsp;ÃÂ·&nbsp;
   <a href="#" onclick="initAuth();
 function bbRender(){
   var el=document.getElementById('bbMessages');
@@ -470,22 +573,111 @@ function bbRender(){
   var user=window._currentUser;
   el.innerHTML=msgs.map(function(m){
     var canDel=user&&(user.name===m.author||user.email==='wes@kingsgardens.com');
-    var del=canDel?('<span class="bb-msg-del" onclick="bbDelete('+m.id+')" title="Delete">✕</span>'):'';
+    var del=canDel?('<span class="bb-msg-del" onclick="bbDelete('+m.id+')" title="Delete">â</span>'):'';
     return '<div class="bb-msg"><div class="bb-msg-header"><span class="bb-msg-author">'+m.author+'</span>'
       +'<span style="display:flex;align-items:center;gap:4px"><span class="bb-msg-time">'+m.ts+'</span>'+del+'</span></div>'
       +'<div class="bb-msg-body">'+m.body+'</div></div>';
   }).join('');
 }
+
+// ── HYDRAWISE IRRIGATION ───────────────────────────────
+const HW_BASE = 'https://api.hydrawise.com/api/v1';
+
+async function connectHydrawise() {
+  const key = document.getElementById('hwKey').value.trim();
+  if (!key) { document.getElementById('irrControllerName').textContent = 'Enter an API key first.'; return; }
+  document.getElementById('irrBadge').textContent = 'Connecting…';
+  try {
+    const [custRes, schedRes] = await Promise.all([
+      fetch(HW_BASE+'/customerdetails.php?api_key='+key),
+      fetch(HW_BASE+'/statusschedule.php?api_key='+key)
+    ]);
+    if (!custRes.ok || !schedRes.ok) throw new Error('HTTP '+custRes.status);
+    const cust = await custRes.json();
+    const sched = await schedRes.json();
+    if (cust.error || sched.error) throw new Error(cust.error || sched.error);
+    localStorage.setItem('kgHwKey', key);
+    renderHydrawise(cust, sched);
+    startHydrawiseRefresh(key);
+  } catch(e) {
+    document.getElementById('irrBadge').textContent = 'Error';
+    const msg = (e.message.includes('fetch') || e.name==='TypeError')
+      ? 'CORS blocked — open from GitHub Pages URL'
+      : 'Failed: '+e.message;
+    document.getElementById('irrControllerName').textContent = msg;
+  }
+}
+
+function renderHydrawise(cust, sched) {
+  const badge = document.getElementById('irrBadge');
+  const dot = document.getElementById('irrDot');
+  const nameEl = document.getElementById('irrControllerName');
+  const zonesEl = document.getElementById('irrZones');
+  const ctrl = cust.controllers?.[0];
+  const lastContact = ctrl?.last_contact
+    ? new Date(ctrl.last_contact*1000).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})
+    : '—';
+  const isOnline = ctrl?.last_contact && (Date.now()/1000 - ctrl.last_contact) < 300;
+  badge.textContent = '● Live';
+  badge.style.background = 'var(--green-pale)';
+  badge.style.color = 'var(--green)';
+  dot.className = 'irr-dot' + (isOnline ? ' online' : '');
+  nameEl.textContent = (ctrl?.name || cust.current_controller || 'Controller') + ' · last contact ' + lastContact;
+  const relays = sched.relays || [];
+  if (!relays.length) { zonesEl.innerHTML = '<div style="font-size:12px;color:var(--text-muted)">No zones found.</div>'; return; }
+  zonesEl.innerHTML = relays.map(z => {
+    const running = z.time === 1;
+    const nextText = running ? '💧 Running — '+fmtSeconds(parseInt(z.run))+' left' : z.timestr ? 'Next: '+z.timestr : 'Scheduled';
+    return '<div class="irr-zone'+(running?' active':'')+'"><div class="irr-zone-num">'+z.relay+'</div><div class="irr-zone-name">'+z.name+'</div><div class="irr-zone-next'+(running?' running':'')+'">'+nextText+(running?'':' · '+fmtSeconds(parseInt(z.run)))+'</div></div>';
+  }).join('');
+}
+
+function fmtSeconds(s) {
+  if (!s || isNaN(s)) return '—';
+  const m=Math.floor(s/60),sec=s%60;
+  return m>0?m+'m'+(sec>0?' '+sec+'s':''):sec+'s';
+}
+
+function startHydrawiseRefresh(key) {
+  clearInterval(window._hwInt);
+  window._hwInt = setInterval(async () => {
+    try {
+      const [cR,sR] = await Promise.all([fetch(HW_BASE+'/customerdetails.php?api_key='+key),fetch(HW_BASE+'/statusschedule.php?api_key='+key)]);
+      renderHydrawise(await cR.json(), await sR.json());
+    } catch(e) {}
+  }, 5*60*1000);
+}
+
+function autoConnectHydrawise() {
+  const key = localStorage.getItem('kgHwKey');
+  if (!key) return;
+  document.getElementById('hwKey').value = key;
+  connectHydrawise();
+}
+
+function clearHydrawiseKey() {
+  localStorage.removeItem('kgHwKey');
+  document.getElementById('hwKey').value = '';
+  document.getElementById('irrBadge').textContent = 'Not connected';
+  document.getElementById('irrBadge').style.background = '';
+  document.getElementById('irrBadge').style.color = '';
+  document.getElementById('irrControllerName').textContent = 'Enter API key to connect';
+  document.getElementById('irrDot').className = 'irr-dot';
+  document.getElementById('irrZones').innerHTML = '<div style="font-size:12px;color:var(--text-muted)">No zones loaded.</div>';
+  clearInterval(window._hwInt);
+}
+
 fetchNWS();
 fetchGDD();
-setInterval(fetchGDD,60*60*1000);return false">Refresh now</a> &nbsp;Â·&nbsp;
-  <a href="#" onclick="demoAlert();return false">Demo: freeze alert</a> &nbsp;Â·&nbsp;
-  <a href="#" onclick="demoGH();return false">Demo: greenhouse warning</a> &nbsp;Â·&nbsp;
+autoConnectHydrawise();
+setInterval(fetchGDD,60*60*1000);return false">Refresh now</a> &nbsp;ÃÂ·&nbsp;
+  <a href="#" onclick="demoAlert();return false">Demo: freeze alert</a> &nbsp;ÃÂ·&nbsp;
+  <a href="#" onclick="demoGH();return false">Demo: greenhouse warning</a> &nbsp;ÃÂ·&nbsp;
   <a href="#" onclick="demoClear();return false">Demo: clear all</a>
 </div>
 
 <script>
-// ââ CLOCK ââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ CLOCK Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function tick(){
   const n=new Date(),h=n.getHours(),m=n.getMinutes();
   document.getElementById('clock').textContent=`${h%12||12}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`;
@@ -493,14 +685,14 @@ function tick(){
 }
 setInterval(tick,1000); tick();
 
-// ââ NWS WEATHER ââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ NWS WEATHER Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 const LAT=38.0406,LON=-84.5037,UA='KingsGardensDashboard/1.0';
-const ICONS={'Sunny':'âï¸','Clear':'âï¸','Partly Cloudy':'â','Mostly Cloudy':'ð¥ï¸','Cloudy':'âï¸','Overcast':'âï¸','Rain':'ð§ï¸','Showers':'ð¦ï¸','Thunderstorm':'âï¸','Snow':'âï¸','Sleet':'ð¨ï¸','Fog':'ð«ï¸','Windy':'ð¨'};
-function wxIcon(t){for(const[k,v]of Object.entries(ICONS))if(t.includes(k))return v;return'ð¡ï¸'}
+const ICONS={'Sunny':'Ã¢ÂÂÃ¯Â¸Â','Clear':'Ã¢ÂÂÃ¯Â¸Â','Partly Cloudy':'Ã¢ÂÂ','Mostly Cloudy':'Ã°ÂÂÂ¥Ã¯Â¸Â','Cloudy':'Ã¢ÂÂÃ¯Â¸Â','Overcast':'Ã¢ÂÂÃ¯Â¸Â','Rain':'Ã°ÂÂÂ§Ã¯Â¸Â','Showers':'Ã°ÂÂÂ¦Ã¯Â¸Â','Thunderstorm':'Ã¢ÂÂÃ¯Â¸Â','Snow':'Ã¢ÂÂÃ¯Â¸Â','Sleet':'Ã°ÂÂÂ¨Ã¯Â¸Â','Fog':'Ã°ÂÂÂ«Ã¯Â¸Â','Windy':'Ã°ÂÂÂ¨'};
+function wxIcon(t){for(const[k,v]of Object.entries(ICONS))if(t.includes(k))return v;return'Ã°ÂÂÂ¡Ã¯Â¸Â'}
 
 async function fetchNWS(){
   const el=document.getElementById('nwsContent');
-  el.innerHTML='<span style="color:var(--text-muted);font-size:13px">Refreshingâ¦</span>';
+  el.innerHTML='<span style="color:var(--text-muted);font-size:13px">RefreshingÃ¢ÂÂ¦</span>';
   try{
     const pt=await(await fetch(`https://api.weather.gov/points/${LAT},${LON}`,{headers:{'User-Agent':UA}})).json();
     const pp=pt.properties;
@@ -518,14 +710,14 @@ async function fetchNWS(){
     const precip=cur.probabilityOfPrecipitation?.value;
     const days5=periods.filter(p=>p.isDaytime).slice(0,5);
 
-    // ââ ALERT DETECTION ââââââââââââââââââââââ
+    // Ã¢ÂÂÃ¢ÂÂ ALERT DETECTION Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     const frostAlerts=(al.features||[]).filter(f=>{
       const ev=(f.properties?.event||'').toLowerCase();
       return ev.includes('frost')||ev.includes('freeze');
     });
 
     if(frostAlerts.length>0){
-      // Real NWS frost/freeze alert â use the actual text
+      // Real NWS frost/freeze alert Ã¢ÂÂ use the actual text
       const p=frostAlerts[0].properties;
       let exp='';
       try{if(p.expires)exp=new Date(p.expires).toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'});}catch(e){}
@@ -534,14 +726,14 @@ async function fetchNWS(){
       // No formal alert but low is dangerous
       const name=lo<=28?'Hard Freeze Warning':lo<=32?'Freeze Warning':'Frost Advisory';
       const desc=lo<=32
-        ?`No formal NWS alert is active, but tonight's forecast low of ${lo}Â°F is at or below freezing. Cover all frost-sensitive plants, check greenhouse heaters, and drain exposed irrigation lines.`
-        :`No formal NWS alert is active, but tonight's forecast low of ${lo}Â°F is near frost threshold. Monitor tender plants and protect as needed.`;
-      showAlert({name,lo,headline:`Forecast low of ${lo}Â°F tonight â take precautions.`,desc,exp:''});
+        ?`No formal NWS alert is active, but tonight's forecast low of ${lo}ÃÂ°F is at or below freezing. Cover all frost-sensitive plants, check greenhouse heaters, and drain exposed irrigation lines.`
+        :`No formal NWS alert is active, but tonight's forecast low of ${lo}ÃÂ°F is near frost threshold. Monitor tender plants and protect as needed.`;
+      showAlert({name,lo,headline:`Forecast low of ${lo}ÃÂ°F tonight Ã¢ÂÂ take precautions.`,desc,exp:''});
     } else {
       clearAlert();
     }
 
-    // ââ GREENHOUSE WARNING CHECK âââââââââââââ
+    // Ã¢ÂÂÃ¢ÂÂ GREENHOUSE WARNING CHECK Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     // Look ahead up to 18 hours of hourly periods
     const hrPeriods = hr.properties.periods;
     const next18 = hrPeriods.slice(0, 18);
@@ -549,9 +741,9 @@ async function fetchNWS(){
 
     const ghReasons = [];
 
-    // 1. Any temp below 45Â°F in next 18 hours
+    // 1. Any temp below 45ÃÂ°F in next 18 hours
     const coldHour = next18.find(p => p.temperature <= 45);
-    if (coldHour) ghReasons.push(`ð¡ï¸ Temp dropping to ${coldHour.temperature}Â°F (${coldHour.name})`);
+    if (coldHour) ghReasons.push(`Ã°ÂÂÂ¡Ã¯Â¸Â Temp dropping to ${coldHour.temperature}ÃÂ°F (${coldHour.name})`);
 
     // 2. Severe thunderstorm in next 18 hours (forecast text check)
     const stormHour = next18.find(p => {
@@ -563,8 +755,8 @@ async function fetchNWS(){
       const ev = (f.properties?.event||'').toLowerCase();
       return ev.includes('thunderstorm') || ev.includes('tornado') || ev.includes('severe');
     });
-    if (stormHour) ghReasons.push(`âï¸ ${stormHour.shortForecast} expected (${stormHour.name})`);
-    else if (severeAlerts.length) ghReasons.push(`âï¸ ${severeAlerts[0].properties.event} in effect`);
+    if (stormHour) ghReasons.push(`Ã¢ÂÂÃ¯Â¸Â ${stormHour.shortForecast} expected (${stormHour.name})`);
+    else if (severeAlerts.length) ghReasons.push(`Ã¢ÂÂÃ¯Â¸Â ${severeAlerts[0].properties.event} in effect`);
 
     // 3. Wind gusts above 45 mph in next 12 hours
     const gustyHour = next12.find(p => {
@@ -575,7 +767,7 @@ async function fetchNWS(){
       if (speeds) return Math.max(...speeds.map(Number)) >= 45;
       return false;
     });
-    // NWS windGust is in km/h in the API â convert: 45 mph = ~72 km/h
+    // NWS windGust is in km/h in the API Ã¢ÂÂ convert: 45 mph = ~72 km/h
     const gustyHourMph = next12.find(p => {
       const gs = p.windGust?.value;
       if (gs != null) return gs >= 72;
@@ -587,7 +779,7 @@ async function fetchNWS(){
       const mph = gustyHourMph.windGust?.value != null
         ? Math.round(gustyHourMph.windGust.value * 0.621)
         : '45+';
-      ghReasons.push(`ð¨ Wind gusts up to ${mph} mph (${gustyHourMph.name})`);
+      ghReasons.push(`Ã°ÂÂÂ¨ Wind gusts up to ${mph} mph (${gustyHourMph.name})`);
     }
 
     if (ghReasons.length > 0) {
@@ -597,47 +789,47 @@ async function fetchNWS(){
     }
     el.innerHTML=`
       <div class="wx-top">
-        <div><div class="wx-temp">${temp}<sup>Â°F</sup></div></div>
+        <div><div class="wx-temp">${temp}<sup>ÃÂ°F</sup></div></div>
         <div style="padding-top:8px">
           <div class="wx-desc">${cur.shortForecast}</div>
-          <div class="wx-note">Wind: ${wind} ${wdir} &nbsp;Â·&nbsp; Precip: ${precip!=null?precip+'%':'N/A'}</div>
+          <div class="wx-note">Wind: ${wind} ${wdir} &nbsp;ÃÂ·&nbsp; Precip: ${precip!=null?precip+'%':'N/A'}</div>
         </div>
       </div>
       <div class="wx-stats">
-        <div class="stat-box"><div class="stat-label">Today High</div><div class="stat-val">${hi}Â°F</div><div class="stat-sub">Daytime</div></div>
+        <div class="stat-box"><div class="stat-label">Today High</div><div class="stat-val">${hi}ÃÂ°F</div><div class="stat-sub">Daytime</div></div>
         <div class="stat-box">
           <div class="stat-label">Tonight Low</div>
-          <div class="stat-val" style="color:${lo<=32?'#991a1a':lo<=36?'#7a4f00':'inherit'}">${lo}Â°F</div>
-          <div class="stat-sub">${lo<=28?'â ï¸ Hard Freeze':lo<=32?'â ï¸ Freeze':lo<=36?'â ï¸ Frost Risk':'â Clear'}</div>
+          <div class="stat-val" style="color:${lo<=32?'#991a1a':lo<=36?'#7a4f00':'inherit'}">${lo}ÃÂ°F</div>
+          <div class="stat-sub">${lo<=28?'Ã¢ÂÂ Ã¯Â¸Â Hard Freeze':lo<=32?'Ã¢ÂÂ Ã¯Â¸Â Freeze':lo<=36?'Ã¢ÂÂ Ã¯Â¸Â Frost Risk':'Ã¢ÂÂ Clear'}</div>
         </div>
         <div class="stat-box"><div class="stat-label">Wind</div><div class="stat-val" style="font-size:14px">${wind}</div><div class="stat-sub">${wdir}</div></div>
         <div class="stat-box"><div class="stat-label">Precip Chance</div><div class="stat-val">${precip!=null?precip+'%':'--'}</div><div class="stat-sub">Probability</div></div>
       </div>
       <div class="forecast-strip">
-        ${days5.map(p=>`<div class="fc-day"><div class="fc-name">${p.name.slice(0,3)}</div><div class="fc-icon">${wxIcon(p.shortForecast)}</div><div class="fc-hi">${p.temperature}Â°</div><div class="fc-cond">${p.shortForecast.slice(0,12)}</div></div>`).join('')}
+        ${days5.map(p=>`<div class="fc-day"><div class="fc-name">${p.name.slice(0,3)}</div><div class="fc-icon">${wxIcon(p.shortForecast)}</div><div class="fc-hi">${p.temperature}ÃÂ°</div><div class="fc-cond">${p.shortForecast.slice(0,12)}</div></div>`).join('')}
       </div>`;
     // Update outdoor work conditions
     renderOutdoorConditions(cur, hrPeriods, lo);
   }catch(err){
-    document.getElementById('nwsContent').innerHTML=`<div style="font-size:12px;color:var(--text-muted)">Could not load NWS data â check connection.<br><small style="opacity:.6">${err.message}</small></div>`;
+    document.getElementById('nwsContent').innerHTML=`<div style="font-size:12px;color:var(--text-muted)">Could not load NWS data Ã¢ÂÂ check connection.<br><small style="opacity:.6">${err.message}</small></div>`;
   }
 }
 
-// ââ ALERT CARD âââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ ALERT CARD Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 let alertActive=false, postComments=[];
 
 function severityStyle(name,lo){
   const e=(name||'').toLowerCase();
-  if(e.includes('hard freeze')||lo<=28) return{bg:'#5c0a0a',hdr:'#8b1111',icon:'ð§',pulse:true};
-  if(e.includes('freeze warning')||lo<=32) return{bg:'#7a1111',hdr:'#b03030',icon:'âï¸',pulse:true};
-  if(e.includes('freeze watch'))          return{bg:'#6b3300',hdr:'#9e5200',icon:'âï¸',pulse:false};
-  return                                        {bg:'#1d3557',hdr:'#2e5a8a',icon:'ð¡ï¸',pulse:false};
+  if(e.includes('hard freeze')||lo<=28) return{bg:'#5c0a0a',hdr:'#8b1111',icon:'Ã°ÂÂ§Â',pulse:true};
+  if(e.includes('freeze warning')||lo<=32) return{bg:'#7a1111',hdr:'#b03030',icon:'Ã¢ÂÂÃ¯Â¸Â',pulse:true};
+  if(e.includes('freeze watch'))          return{bg:'#6b3300',hdr:'#9e5200',icon:'Ã¢ÂÂÃ¯Â¸Â',pulse:false};
+  return                                        {bg:'#1d3557',hdr:'#2e5a8a',icon:'Ã°ÂÂÂ¡Ã¯Â¸Â',pulse:false};
 }
 
 function showAlert({name,lo,headline,desc,exp}){
   alertActive=true;
   const s=severityStyle(name,lo);
-  const shortDesc=(desc||'').length>420?desc.slice(0,420).replace(/\s\S+$/,'')+'â¦':desc;
+  const shortDesc=(desc||'').length>420?desc.slice(0,420).replace(/\s\S+$/,'')+'Ã¢ÂÂ¦':desc;
   document.getElementById('alertSlot').innerHTML=`
     <div class="alert-card${s.pulse?' pulse':''}" style="background:${s.bg};border:2.5px solid ${s.hdr}">
       <div class="alert-top" style="background:${s.hdr}">
@@ -645,20 +837,20 @@ function showAlert({name,lo,headline,desc,exp}){
           <div class="alert-icon-big">${s.icon}</div>
           <div>
             <div class="alert-event">${name.toUpperCase()}</div>
-            <div class="alert-source">National Weather Service &nbsp;Â·&nbsp; Lexington, KY 40515${exp?'&nbsp;Â·&nbsp; Expires '+exp:''}</div>
+            <div class="alert-source">National Weather Service &nbsp;ÃÂ·&nbsp; Lexington, KY 40515${exp?'&nbsp;ÃÂ·&nbsp; Expires '+exp:''}</div>
           </div>
         </div>
-        ${lo!=null?`<div class="alert-low-pill"><div class="alert-low-label">Tonight's Low</div><div class="alert-low-temp">${lo}Â°F</div></div>`:''}
+        ${lo!=null?`<div class="alert-low-pill"><div class="alert-low-label">Tonight's Low</div><div class="alert-low-temp">${lo}ÃÂ°F</div></div>`:''}
       </div>
       <div class="alert-body">
         <div class="alert-divider"></div>
         ${headline?`<div class="alert-headline">${headline}</div>`:''}
         ${shortDesc?`<div class="alert-desc">${shortDesc}</div>`:''}
         <div class="alert-tags">
-          <span class="alert-tag">ð± Cover tender annuals &amp; perennials</span>
-          <span class="alert-tag">ð¡ï¸ Check greenhouse heaters</span>
-          <span class="alert-tag">ð§ Protect irrigation &amp; pipes</span>
-          <span class="alert-tag">ðª´ Move potted tropicals inside</span>
+          <span class="alert-tag">Ã°ÂÂÂ± Cover tender annuals &amp; perennials</span>
+          <span class="alert-tag">Ã°ÂÂÂ¡Ã¯Â¸Â Check greenhouse heaters</span>
+          <span class="alert-tag">Ã°ÂÂÂ§ Protect irrigation &amp; pipes</span>
+          <span class="alert-tag">Ã°ÂÂªÂ´ Move potted tropicals inside</span>
         </div>
       </div>
     </div>`;
@@ -675,7 +867,7 @@ function injectCommentCard(){
   document.getElementById('commentSlot').innerHTML=`
     <div class="comment-card" id="commentCard">
       <div class="card-header">
-        <span class="card-title">ð Frost / Freeze Event â Staff Observation Log</span>
+        <span class="card-title">Ã°ÂÂÂ Frost / Freeze Event Ã¢ÂÂ Staff Observation Log</span>
         <span class="badge badge-red">Log your observations</span>
       </div>
       <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.65">
@@ -686,10 +878,10 @@ function injectCommentCard(){
       </div>
       <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
         <input id="commentAuthor" placeholder="Your name" style="width:160px">
-        <span style="font-size:11px;color:var(--text-muted)">then type your note â</span>
+        <span style="font-size:11px;color:var(--text-muted)">then type your note Ã¢ÂÂ</span>
       </div>
       <div class="comment-input-row">
-        <textarea id="commentInput" placeholder="e.g. Covered flats in greenhouse 2. Heater holding at 48Â°F. Some wilting on exposed impatiens in lot C. Moved citrus inside."></textarea>
+        <textarea id="commentInput" placeholder="e.g. Covered flats in greenhouse 2. Heater holding at 48ÃÂ°F. Some wilting on exposed impatiens in lot C. Moved citrus inside."></textarea>
         <button class="btn-green" onclick="addComment()" style="height:56px;align-self:flex-end;white-space:nowrap;padding:0 16px">Log Note</button>
       </div>
     </div>`;
@@ -710,35 +902,35 @@ function renderComments(){
   const el=document.getElementById('commentList');
   if(!el)return;
   if(!postComments.length){el.innerHTML='<div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:4px 0">No observations logged yet.</div>';return;}
-  el.innerHTML=postComments.map(c=>`<div class="comment-item"><div class="comment-meta">${c.who} &nbsp;Â·&nbsp; ${c.ts}</div><div class="comment-body">${c.body}</div></div>`).join('');
+  el.innerHTML=postComments.map(c=>`<div class="comment-item"><div class="comment-meta">${c.who} &nbsp;ÃÂ·&nbsp; ${c.ts}</div><div class="comment-body">${c.body}</div></div>`).join('');
   el.scrollTop=el.scrollHeight;
 }
 
 function demoAlert(){
   showAlert({name:'Freeze Warning',lo:29,
     headline:'Freeze Warning in effect from midnight tonight through 9 AM EST Thursday.',
-    desc:'A hard freeze is likely overnight with minimum temperatures dropping into the upper 20s. Frost-sensitive vegetation may be killed outright. Tender plants should be covered or brought indoors. Outdoor pipes and irrigation lines should be drained or insulated. Ensure greenhouse heating systems are set no lower than 40Â°F.',
-    exp:'Thu, Mar 27 â 9:00 AM EST'});
+    desc:'A hard freeze is likely overnight with minimum temperatures dropping into the upper 20s. Frost-sensitive vegetation may be killed outright. Tender plants should be covered or brought indoors. Outdoor pipes and irrigation lines should be drained or insulated. Ensure greenhouse heating systems are set no lower than 40ÃÂ°F.',
+    exp:'Thu, Mar 27 Ã¢ÂÂ 9:00 AM EST'});
 }
 function demoGH(){
   showGH([
-    'ð¡ï¸ Temp dropping to 42Â°F (Tonight)',
-    'âï¸ Severe Thunderstorm Watch in effect',
-    'ð¨ Wind gusts up to 52 mph (This Evening)'
+    'Ã°ÂÂÂ¡Ã¯Â¸Â Temp dropping to 42ÃÂ°F (Tonight)',
+    'Ã¢ÂÂÃ¯Â¸Â Severe Thunderstorm Watch in effect',
+    'Ã°ÂÂÂ¨ Wind gusts up to 52 mph (This Evening)'
   ]);
 }
 function demoClear(){ clearAlert(); clearGH(); }
 
-// ââ GREENHOUSE WARNING CARD ââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ GREENHOUSE WARNING CARD Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function showGH(reasons){
   document.getElementById('ghSlot').innerHTML=`
     <div class="gh-card">
       <div class="gh-top">
         <div class="gh-top-left">
-          <div class="gh-icon">ð¡</div>
+          <div class="gh-icon">Ã°ÂÂÂ¡</div>
           <div>
             <div class="gh-headline">CLOSE ALL GREENHOUSES TONIGHT</div>
-            <div class="gh-sub">Weather conditions require greenhouse closure â see reasons below</div>
+            <div class="gh-sub">Weather conditions require greenhouse closure Ã¢ÂÂ see reasons below</div>
           </div>
         </div>
       </div>
@@ -756,24 +948,24 @@ function clearGH(){
   document.getElementById('ghSlot').innerHTML='';
 }
 
-// ââ AMBIENT WEATHER STATION ââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ AMBIENT WEATHER STATION Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function deg2dir(d){return['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(d/22.5)%16]}
 
 async function connectStation(){
   const api=document.getElementById('awApi').value.trim(),app=document.getElementById('awApp').value.trim();
   const st=document.getElementById('stStatus');
-  if(!api||!app){st.textContent='â  Enter both keys first.';return;}
-  st.textContent='Connectingâ¦';
+  if(!api||!app){st.textContent='Ã¢ÂÂ  Enter both keys first.';return;}
+  st.textContent='ConnectingÃ¢ÂÂ¦';
   try{
     const data=await(await fetch(`https://api.ambientweather.net/v1/devices?applicationKey=${app}&apiKey=${api}`)).json();
-    if(!Array.isArray(data)||!data.length){st.textContent='â  No devices found.';return;}
+    if(!Array.isArray(data)||!data.length){st.textContent='Ã¢ÂÂ  No devices found.';return;}
     localStorage.setItem('kgAwApi',api);
     localStorage.setItem('kgAwApp',app);
     applyStation(data[0].lastData);
     const ts=new Date(data[0].lastData.dateutc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-    st.textContent=`â Connected Â· last update ${ts} Â· keys saved`;
+    st.textContent=`Ã¢ÂÂ Connected ÃÂ· last update ${ts} ÃÂ· keys saved`;
     startStationRefresh(api,app);
-  }catch(e){st.textContent='â  Error: '+e.message;}
+  }catch(e){st.textContent='Ã¢ÂÂ  Error: '+e.message;}
 }
 
 function startStationRefresh(api,app){
@@ -782,8 +974,8 @@ function startStationRefresh(api,app){
   window._stInt=setInterval(async()=>{
     try{
       const d2=await(await fetch(`https://api.ambientweather.net/v1/devices?applicationKey=${app}&apiKey=${api}`)).json();
-      if(Array.isArray(d2)&&d2.length){applyStation(d2[0].lastData);const ts2=new Date(d2[0].lastData.dateutc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});st.textContent=`â Connected Â· last update ${ts2}`;}
-    }catch(e){st.textContent='â  Refresh error: '+e.message;}
+      if(Array.isArray(d2)&&d2.length){applyStation(d2[0].lastData);const ts2=new Date(d2[0].lastData.dateutc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});st.textContent=`Ã¢ÂÂ Connected ÃÂ· last update ${ts2}`;}
+    }catch(e){st.textContent='Ã¢ÂÂ  Refresh error: '+e.message;}
   },5*60*1000);
 }
 
@@ -793,17 +985,17 @@ function autoConnectStation(){
   document.getElementById('awApi').value=api;
   document.getElementById('awApp').value=app;
   const st=document.getElementById('stStatus');
-  st.textContent='Auto-connecting with saved keysâ¦';
+  st.textContent='Auto-connecting with saved keysÃ¢ÂÂ¦';
   fetch(`https://api.ambientweather.net/v1/devices?applicationKey=${app}&apiKey=${api}`)
     .then(r=>r.json())
     .then(data=>{
-      if(!Array.isArray(data)||!data.length){st.textContent='â  No devices found.';return;}
+      if(!Array.isArray(data)||!data.length){st.textContent='Ã¢ÂÂ  No devices found.';return;}
       applyStation(data[0].lastData);
       const ts=new Date(data[0].lastData.dateutc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-      st.textContent=`â Auto-connected Â· last update ${ts}`;
+      st.textContent=`Ã¢ÂÂ Auto-connected ÃÂ· last update ${ts}`;
       startStationRefresh(api,app);
     })
-    .catch(e=>{st.textContent='â  Auto-connect failed: '+e.message;});
+    .catch(e=>{st.textContent='Ã¢ÂÂ  Auto-connect failed: '+e.message;});
 }
 
 function clearStationKeys(){
@@ -818,11 +1010,11 @@ function clearStationKeys(){
 function applyStation(d){setStation(d.tempf??null,d.humidity??null,d.windspeedmph??null,d.winddir!=null?deg2dir(d.winddir):null,d.dailyrainin??null)}
 
 function setStation(t,h,w,wd,r){
-  document.getElementById('st-temp').textContent=t!=null?Math.round(t)+'Â°F':'--Â°F';
-  document.getElementById('st-temp-sub').textContent=t!=null?(t<=32?'â ï¸ At/below freezing':t<=36?'â ï¸ Frost risk':'Normal'):'â';
+  document.getElementById('st-temp').textContent=t!=null?Math.round(t)+'ÃÂ°F':'--ÃÂ°F';
+  document.getElementById('st-temp-sub').textContent=t!=null?(t<=32?'Ã¢ÂÂ Ã¯Â¸Â At/below freezing':t<=36?'Ã¢ÂÂ Ã¯Â¸Â Frost risk':'Normal'):'Ã¢ÂÂ';
   document.getElementById('st-hum').textContent=h!=null?Math.round(h)+'%':'--%';
   document.getElementById('st-wind').textContent=w!=null?Math.round(w)+' mph':'-- mph';
-  document.getElementById('st-wind-dir').textContent=wd||'â';
+  document.getElementById('st-wind-dir').textContent=wd||'Ã¢ÂÂ';
   document.getElementById('st-rain').textContent=r!=null?r.toFixed(2)+' in':'-- in';
 }
 
@@ -832,16 +1024,22 @@ function manualStation(){
   setStation(isNaN(t)?null:t,isNaN(h)?null:h,isNaN(w)?null:w,null,isNaN(r)?null:r);
 }
 
-// ââ STAFF MESSAGE âââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ STAFF MESSAGE Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 function postMessage(){
   const v=document.getElementById('msgInput').value.trim();
   if(!v)return;
+  if(window.__db){
+    const {doc,setDoc,serverTimestamp}=window.__fs;
+    setDoc(doc(window.__db,'config','staff_message'),{text:v,updatedAt:serverTimestamp()})
+      .catch(e=>console.error('postMessage error',e));
+  }
+  // Also update locally for instant feedback
   document.getElementById('msgBody').textContent=v;
   document.getElementById('msgInput').value='';
   document.getElementById('msgTs').textContent='Updated '+new Date().toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
 }
 
-// ââ DELIVERY CALENDAR âââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ DELIVERY CALENDAR Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 let calView=new Date(),calSel=null,calEvs={};
 function fmtKey(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function changeMonth(dir){calView=new Date(calView.getFullYear(),calView.getMonth()+dir,1);renderCal()}
@@ -865,7 +1063,7 @@ function renderEvList(){
   const el=document.getElementById('eventList'),evs=calEvs[calSel]||[];
   if(!evs.length){el.innerHTML='<div style="font-size:12px;color:var(--text-muted)">No deliveries scheduled for this date.</div>';return;}
   const dc={delivery:'dot-delivery',vendor:'dot-vendor',misc:'dot-misc'};
-  el.innerHTML=evs.map((e,i)=>`<div class="event-item"><span class="ev-dot ${dc[e.type]||'dot-misc'}"></span><span class="ev-name">${e.name}</span><span class="ev-time">${e.time}</span><span class="ev-del" onclick="deleteEvent(${i})" title="Remove">â</span></div>`).join('');
+  el.innerHTML=evs.map((e,i)=>`<div class="event-item"><span class="ev-dot ${dc[e.type]||'dot-misc'}"></span><span class="ev-name">${e.name}</span><span class="ev-time">${e.time}</span><span class="ev-del" onclick="deleteEvent(${i})" title="Remove">Ã¢ÂÂ</span></div>`).join('');
 }
 
 function addEvent(){
@@ -882,38 +1080,38 @@ function addEvent(){
 function deleteEvent(i){calEvs[calSel].splice(i,1);renderCal();renderEvList()}
 
 
-// ââ GROWING DEGREE DAYS âââââââââââââââââââââââââââ
-// Source: Open-Meteo ERA5 reanalysis â free, no API key, full CORS.
+// Ã¢ÂÂÃ¢ÂÂ GROWING DEGREE DAYS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// Source: Open-Meteo ERA5 reanalysis Ã¢ÂÂ free, no API key, full CORS.
 // Matches UK Ag Weather Center values closely (verified 226 vs 226).
 
 let gddBase=50, gddData=[], gddPriorData=[];
 
 const GDD_MILESTONES={
   50:[
-    {gdd:50,  icon:'ð¸',name:'Forsythia first bloom'},
-    {gdd:100, icon:'ð¸',name:'Forsythia peak bloom'},
-    {gdd:200, icon:'ð·',name:'Tulip & daffodil peak'},
-    {gdd:350, icon:'ð',name:'Crabapple bloom'},
-    {gdd:500, icon:'ð¿',name:'Lilac full bloom'},
-    {gdd:700, icon:'ð¹',name:'Rose first flush'},
-    {gdd:1000,icon:'ð¦',name:'Japanese beetle emergence'},
-    {gdd:1350,icon:'ð»',name:'Coneflower / rudbeckia bloom'},
+    {gdd:50,  icon:'Ã°ÂÂÂ¸',name:'Forsythia first bloom'},
+    {gdd:100, icon:'Ã°ÂÂÂ¸',name:'Forsythia peak bloom'},
+    {gdd:200, icon:'Ã°ÂÂÂ·',name:'Tulip & daffodil peak'},
+    {gdd:350, icon:'Ã°ÂÂÂ',name:'Crabapple bloom'},
+    {gdd:500, icon:'Ã°ÂÂÂ¿',name:'Lilac full bloom'},
+    {gdd:700, icon:'Ã°ÂÂÂ¹',name:'Rose first flush'},
+    {gdd:1000,icon:'Ã°ÂÂ¦Â',name:'Japanese beetle emergence'},
+    {gdd:1350,icon:'Ã°ÂÂÂ»',name:'Coneflower / rudbeckia bloom'},
   ],
   40:[
-    {gdd:150, icon:'ð±',name:'Cool-season seed germination'},
-    {gdd:300, icon:'ð¥¬',name:'Lettuce / spinach transplant'},
-    {gdd:600, icon:'ð¸',name:'Pansy peak color'},
-    {gdd:900, icon:'ð¿',name:'Perennial ground cover est.'},
-    {gdd:1400,icon:'ð»',name:'Warm-season planting safe'},
-    {gdd:2000,icon:'ð',name:'Fall planting window opens'},
+    {gdd:150, icon:'Ã°ÂÂÂ±',name:'Cool-season seed germination'},
+    {gdd:300, icon:'Ã°ÂÂ¥Â¬',name:'Lettuce / spinach transplant'},
+    {gdd:600, icon:'Ã°ÂÂÂ¸',name:'Pansy peak color'},
+    {gdd:900, icon:'Ã°ÂÂÂ¿',name:'Perennial ground cover est.'},
+    {gdd:1400,icon:'Ã°ÂÂÂ»',name:'Warm-season planting safe'},
+    {gdd:2000,icon:'Ã°ÂÂÂ',name:'Fall planting window opens'},
   ],
   32:[
-    {gdd:200, icon:'ð±',name:'Soil workable â early seeding'},
-    {gdd:500, icon:'ð¸',name:'Early spring bloomers peak'},
-    {gdd:1000,icon:'ð¿',name:'Full canopy leaf-out'},
-    {gdd:1800,icon:'ð»',name:'Mid-summer annuals peak'},
-    {gdd:2800,icon:'ð',name:'First fall color'},
-    {gdd:3500,icon:'âï¸', name:'Hardening off / dormancy'},
+    {gdd:200, icon:'Ã°ÂÂÂ±',name:'Soil workable Ã¢ÂÂ early seeding'},
+    {gdd:500, icon:'Ã°ÂÂÂ¸',name:'Early spring bloomers peak'},
+    {gdd:1000,icon:'Ã°ÂÂÂ¿',name:'Full canopy leaf-out'},
+    {gdd:1800,icon:'Ã°ÂÂÂ»',name:'Mid-summer annuals peak'},
+    {gdd:2800,icon:'Ã°ÂÂÂ',name:'First fall color'},
+    {gdd:3500,icon:'Ã¢ÂÂÃ¯Â¸Â', name:'Hardening off / dormancy'},
   ]
 };
 const GDD_MAX={50:2500,40:3500,32:5000};
@@ -948,7 +1146,7 @@ async function fetchOpenMeteoGDD(start,end,base){
 
 async function fetchGDD(){
   const badge=document.getElementById('gddBadge'),statusEl=document.getElementById('gddStatus');
-  badge.textContent='Loadingâ¦';badge.style.background='';badge.style.color='';
+  badge.textContent='LoadingÃ¢ÂÂ¦';badge.style.background='';badge.style.color='';
   const si=document.getElementById('gddStartDate');
   const curYear=new Date().getFullYear();
   if(!si.value)si.value=curYear+'-01-01';
@@ -958,7 +1156,7 @@ async function fetchGDD(){
   const sYear=parseInt(startDate.slice(0,4)),priorYear=sYear-1;
   const priorStart=priorYear+startDate.slice(4),priorEnd=priorYear+endDate.slice(4);
   document.getElementById('gddDaysCount').textContent='';
-  statusEl.textContent='Fetching from Open-Meteoâ¦';
+  statusEl.textContent='Fetching from Open-MeteoÃ¢ÂÂ¦';
   try{
     const [thisRows,priorRows]=await Promise.all([
       fetchOpenMeteoGDD(startDate,endDate,gddBase),
@@ -966,8 +1164,8 @@ async function fetchGDD(){
     ]);
     gddData=thisRows;gddPriorData=priorRows;
     if(!gddData.length){badge.textContent='No data';statusEl.textContent='No data returned.';return;}
-    badge.textContent='â Live';badge.style.background='var(--green-pale)';badge.style.color='var(--green)';
-    statusEl.textContent=gddData.length+' days Â· Lexington KY Â· Open-Meteo ERA5';
+    badge.textContent='Ã¢ÂÂ Live';badge.style.background='var(--green-pale)';badge.style.color='var(--green)';
+    statusEl.textContent=gddData.length+' days ÃÂ· Lexington KY ÃÂ· Open-Meteo ERA5';
     document.getElementById('gddYearLabel').textContent=sYear;
     document.getElementById('gddPriorYear').textContent=priorYear+' (same date)';
     document.getElementById('gddDaysCount').textContent=gddData.length+' days';
@@ -995,11 +1193,11 @@ function renderGDD(){
   const el=document.getElementById('gddMilestones');
   el.innerHTML=(GDD_MILESTONES[gddBase]||[]).map(m=>{
     const reached=thisTotal>=m.gdd,remaining=m.gdd-thisTotal,priorReach=priorTotal!=null&&priorTotal>=m.gdd;
-    return `<div class="gdd-milestone${reached?' gdd-ms-reached':''}"><span class="gdd-ms-dot${reached?'':' gdd-ms-dot-pending'}"></span><span style="font-size:14px;line-height:1">${m.icon}</span><span class="gdd-ms-name">${m.name}</span><span class="gdd-ms-val">${reached?'â '+m.gdd:remaining+' to go'}</span>${priorTotal!=null?`<span style="font-size:10px;color:var(--text-muted);margin-left:2px">${priorReach?'(â last yr)':''}</span>`:''}</div>`;
+    return `<div class="gdd-milestone${reached?' gdd-ms-reached':''}"><span class="gdd-ms-dot${reached?'':' gdd-ms-dot-pending'}"></span><span style="font-size:14px;line-height:1">${m.icon}</span><span class="gdd-ms-name">${m.name}</span><span class="gdd-ms-val">${reached?'Ã¢ÂÂ '+m.gdd:remaining+' to go'}</span>${priorTotal!=null?`<span style="font-size:10px;color:var(--text-muted);margin-left:2px">${priorReach?'(Ã¢ÂÂ last yr)':''}</span>`:''}</div>`;
   }).join('');
 }
 
-// ââ INIT ââââââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ INIT Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 fetchNWS();
 fetchGDD();
 autoConnectStation();
@@ -1010,3 +1208,642 @@ setInterval(fetchGDD,60*60*1000);
 </script>
 </body>
 </html>
+// ── TEAM BULLETIN BOARD (Firebase) ────────────────
+function bbPost(){
+  const ta=document.getElementById('bbInput');
+  const body=ta.value.trim();
+  if(!body){ta.focus();return;}
+  const user=window._currentUser;
+  if(!window.__db){alert('Firebase not loaded yet, try again in a moment.');return;}
+  const {collection,addDoc,serverTimestamp}=window.__fs;
+  addDoc(collection(window.__db,'bulletin_board'),{
+    author:user?user.name:'Staff',
+    body,
+    ts:serverTimestamp()
+  }).catch(e=>console.error('bbPost error',e));
+  ta.value='';
+}
+
+function bbDelete(id){
+  if(!window.__db)return;
+  const {doc,deleteDoc}=window.__fs;
+  deleteDoc(doc(window.__db,'bulletin_board',id)).catch(e=>console.error('bbDelete error',e));
+}
+
+function bbRenderFirebase(){
+  const el=document.getElementById('bbMessages');if(!el)return;
+  const msgs=window.__bbFirebaseMsgs||[];
+  if(!msgs.length){el.innerHTML='<div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:4px 0">No messages yet. Be the first to post!</div>';return;}
+  const user=window._currentUser;
+  el.innerHTML=msgs.map(function(m){
+    const canDel=user&&(user.name===m.author||user.email==='wes@kingsgardens.com');
+    const tsStr=m.ts&&m.ts.toDate?m.ts.toDate().toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):m.ts||'';
+    const del=canDel?('<span class="bb-msg-del" onclick="bbDelete(''+m.id+'')" title="Delete">✕</span>'):'';
+    return '<div class="bb-msg"><div class="bb-msg-header"><span class="bb-msg-author">'+m.author+'</span><span style="display:flex;align-items:center;gap:4px"><span class="bb-msg-time">'+tsStr+'</span>'+del+'</span></div><div class="bb-msg-body">'+m.body+'</div></div>';
+  }).join('');
+}
+
+// Keep local bbRender as alias for initial render before Firebase loads
+function bbRender(){ bbRenderFirebase(); }
+
+fetchNWS();
+fetchGDD();
+setInterval(fetchGDD,60*60*1000);return false">Refresh now</a> &nbsp;ÃÂ·&nbsp;
+  <a href="#" onclick="demoAlert();return false">Demo: freeze alert</a> &nbsp;ÃÂ·&nbsp;
+  <a href="#" onclick="demoGH();return false">Demo: greenhouse warning</a> &nbsp;ÃÂ·&nbsp;
+  <a href="#" onclick="demoClear();return false">Demo: clear all</a>
+</div>
+
+<script>
+// Ã¢ÂÂÃ¢ÂÂ CLOCK Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+function tick(){
+  const n=new Date(),h=n.getHours(),m=n.getMinutes();
+  document.getElementById('clock').textContent=`${h%12||12}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`;
+  document.getElementById('dateLine').textContent=n.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+}
+setInterval(tick,1000); tick();
+
+// Ã¢ÂÂÃ¢ÂÂ NWS WEATHER Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+const LAT=38.0406,LON=-84.5037,UA='KingsGardensDashboard/1.0';
+const ICONS={'Sunny':'Ã¢ÂÂÃ¯Â¸Â','Clear':'Ã¢ÂÂÃ¯Â¸Â','Partly Cloudy':'Ã¢ÂÂ','Mostly Cloudy':'Ã°ÂÂÂ¥Ã¯Â¸Â','Cloudy':'Ã¢ÂÂÃ¯Â¸Â','Overcast':'Ã¢ÂÂÃ¯Â¸Â','Rain':'Ã°ÂÂÂ§Ã¯Â¸Â','Showers':'Ã°ÂÂÂ¦Ã¯Â¸Â','Thunderstorm':'Ã¢ÂÂÃ¯Â¸Â','Snow':'Ã¢ÂÂÃ¯Â¸Â','Sleet':'Ã°ÂÂÂ¨Ã¯Â¸Â','Fog':'Ã°ÂÂÂ«Ã¯Â¸Â','Windy':'Ã°ÂÂÂ¨'};
+function wxIcon(t){for(const[k,v]of Object.entries(ICONS))if(t.includes(k))return v;return'Ã°ÂÂÂ¡Ã¯Â¸Â'}
+
+async function fetchNWS(){
+  const el=document.getElementById('nwsContent');
+  el.innerHTML='<span style="color:var(--text-muted);font-size:13px">RefreshingÃ¢ÂÂ¦</span>';
+  try{
+    const pt=await(await fetch(`https://api.weather.gov/points/${LAT},${LON}`,{headers:{'User-Agent':UA}})).json();
+    const pp=pt.properties;
+    const[fc,hr,al]=await Promise.all([
+      fetch(pp.forecast,{headers:{'User-Agent':UA}}).then(r=>r.json()),
+      fetch(pp.forecastHourly,{headers:{'User-Agent':UA}}).then(r=>r.json()),
+      fetch(`https://api.weather.gov/alerts/active?point=${LAT},${LON}`,{headers:{'User-Agent':UA}}).then(r=>r.json())
+    ]);
+    const periods=fc.properties.periods;
+    const cur=hr.properties.periods[0];
+    const dayP=periods.find(p=>p.isDaytime)||periods[0];
+    const niteP=periods.find(p=>!p.isDaytime)||periods[1];
+    const temp=cur.temperature,hi=dayP.temperature,lo=niteP.temperature;
+    const wind=cur.windSpeed||'--',wdir=cur.windDirection||'--';
+    const precip=cur.probabilityOfPrecipitation?.value;
+    const days5=periods.filter(p=>p.isDaytime).slice(0,5);
+
+    // Ã¢ÂÂÃ¢ÂÂ ALERT DETECTION Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    const frostAlerts=(al.features||[]).filter(f=>{
+      const ev=(f.properties?.event||'').toLowerCase();
+      return ev.includes('frost')||ev.includes('freeze');
+    });
+
+    if(frostAlerts.length>0){
+      // Real NWS frost/freeze alert Ã¢ÂÂ use the actual text
+      const p=frostAlerts[0].properties;
+      let exp='';
+      try{if(p.expires)exp=new Date(p.expires).toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'});}catch(e){}
+      showAlert({name:p.event,lo,headline:p.headline||p.event,desc:p.description||'',exp});
+    } else if(lo<=36){
+      // No formal alert but low is dangerous
+      const name=lo<=28?'Hard Freeze Warning':lo<=32?'Freeze Warning':'Frost Advisory';
+      const desc=lo<=32
+        ?`No formal NWS alert is active, but tonight's forecast low of ${lo}ÃÂ°F is at or below freezing. Cover all frost-sensitive plants, check greenhouse heaters, and drain exposed irrigation lines.`
+        :`No formal NWS alert is active, but tonight's forecast low of ${lo}ÃÂ°F is near frost threshold. Monitor tender plants and protect as needed.`;
+      showAlert({name,lo,headline:`Forecast low of ${lo}ÃÂ°F tonight Ã¢ÂÂ take precautions.`,desc,exp:''});
+    } else {
+      clearAlert();
+    }
+
+    // Ã¢ÂÂÃ¢ÂÂ GREENHOUSE WARNING CHECK Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    // Look ahead up to 18 hours of hourly periods
+    const hrPeriods = hr.properties.periods;
+    const next18 = hrPeriods.slice(0, 18);
+    const next12 = hrPeriods.slice(0, 12);
+
+    const ghReasons = [];
+
+    // 1. Any temp below 45ÃÂ°F in next 18 hours
+    const coldHour = next18.find(p => p.temperature <= 45);
+    if (coldHour) ghReasons.push(`Ã°ÂÂÂ¡Ã¯Â¸Â Temp dropping to ${coldHour.temperature}ÃÂ°F (${coldHour.name})`);
+
+    // 2. Severe thunderstorm in next 18 hours (forecast text check)
+    const stormHour = next18.find(p => {
+      const t = (p.shortForecast||'').toLowerCase();
+      return t.includes('thunderstorm') || t.includes('severe') || t.includes('tornado');
+    });
+    // Also check NWS severe alerts
+    const severeAlerts = (al.features||[]).filter(f => {
+      const ev = (f.properties?.event||'').toLowerCase();
+      return ev.includes('thunderstorm') || ev.includes('tornado') || ev.includes('severe');
+    });
+    if (stormHour) ghReasons.push(`Ã¢ÂÂÃ¯Â¸Â ${stormHour.shortForecast} expected (${stormHour.name})`);
+    else if (severeAlerts.length) ghReasons.push(`Ã¢ÂÂÃ¯Â¸Â ${severeAlerts[0].properties.event} in effect`);
+
+    // 3. Wind gusts above 45 mph in next 12 hours
+    const gustyHour = next12.find(p => {
+      const gs = p.windGust?.value;
+      if (gs != null) return gs >= 45; // NWS hourly windGust is in km/h
+      // fallback: parse windSpeed string like "40 to 55 mph"
+      const speeds = (p.windSpeed||'').match(/\d+/g);
+      if (speeds) return Math.max(...speeds.map(Number)) >= 45;
+      return false;
+    });
+    // NWS windGust is in km/h in the API Ã¢ÂÂ convert: 45 mph = ~72 km/h
+    const gustyHourMph = next12.find(p => {
+      const gs = p.windGust?.value;
+      if (gs != null) return gs >= 72;
+      const speeds = (p.windSpeed||'').match(/\d+/g);
+      if (speeds) return Math.max(...speeds.map(Number)) >= 45;
+      return false;
+    });
+    if (gustyHourMph) {
+      const mph = gustyHourMph.windGust?.value != null
+        ? Math.round(gustyHourMph.windGust.value * 0.621)
+        : '45+';
+      ghReasons.push(`Ã°ÂÂÂ¨ Wind gusts up to ${mph} mph (${gustyHourMph.name})`);
+    }
+
+    if (ghReasons.length > 0) {
+      showGH(ghReasons);
+    } else {
+      clearGH();
+    }
+    el.innerHTML=`
+      <div class="wx-top">
+        <div><div class="wx-temp">${temp}<sup>ÃÂ°F</sup></div></div>
+        <div style="padding-top:8px">
+          <div class="wx-desc">${cur.shortForecast}</div>
+          <div class="wx-note">Wind: ${wind} ${wdir} &nbsp;ÃÂ·&nbsp; Precip: ${precip!=null?precip+'%':'N/A'}</div>
+        </div>
+      </div>
+      <div class="wx-stats">
+        <div class="stat-box"><div class="stat-label">Today High</div><div class="stat-val">${hi}ÃÂ°F</div><div class="stat-sub">Daytime</div></div>
+        <div class="stat-box">
+          <div class="stat-label">Tonight Low</div>
+          <div class="stat-val" style="color:${lo<=32?'#991a1a':lo<=36?'#7a4f00':'inherit'}">${lo}ÃÂ°F</div>
+          <div class="stat-sub">${lo<=28?'Ã¢ÂÂ Ã¯Â¸Â Hard Freeze':lo<=32?'Ã¢ÂÂ Ã¯Â¸Â Freeze':lo<=36?'Ã¢ÂÂ Ã¯Â¸Â Frost Risk':'Ã¢ÂÂ Clear'}</div>
+        </div>
+        <div class="stat-box"><div class="stat-label">Wind</div><div class="stat-val" style="font-size:14px">${wind}</div><div class="stat-sub">${wdir}</div></div>
+        <div class="stat-box"><div class="stat-label">Precip Chance</div><div class="stat-val">${precip!=null?precip+'%':'--'}</div><div class="stat-sub">Probability</div></div>
+      </div>
+      <div class="forecast-strip">
+        ${days5.map(p=>`<div class="fc-day"><div class="fc-name">${p.name.slice(0,3)}</div><div class="fc-icon">${wxIcon(p.shortForecast)}</div><div class="fc-hi">${p.temperature}ÃÂ°</div><div class="fc-cond">${p.shortForecast.slice(0,12)}</div></div>`).join('')}
+      </div>`;
+    // Update outdoor work conditions
+    renderOutdoorConditions(cur, hrPeriods, lo);
+  }catch(err){
+    document.getElementById('nwsContent').innerHTML=`<div style="font-size:12px;color:var(--text-muted)">Could not load NWS data Ã¢ÂÂ check connection.<br><small style="opacity:.6">${err.message}</small></div>`;
+  }
+}
+
+// Ã¢ÂÂÃ¢ÂÂ ALERT CARD Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+let alertActive=false, postComments=[];
+
+function severityStyle(name,lo){
+  const e=(name||'').toLowerCase();
+  if(e.includes('hard freeze')||lo<=28) return{bg:'#5c0a0a',hdr:'#8b1111',icon:'Ã°ÂÂ§Â',pulse:true};
+  if(e.includes('freeze warning')||lo<=32) return{bg:'#7a1111',hdr:'#b03030',icon:'Ã¢ÂÂÃ¯Â¸Â',pulse:true};
+  if(e.includes('freeze watch'))          return{bg:'#6b3300',hdr:'#9e5200',icon:'Ã¢ÂÂÃ¯Â¸Â',pulse:false};
+  return                                        {bg:'#1d3557',hdr:'#2e5a8a',icon:'Ã°ÂÂÂ¡Ã¯Â¸Â',pulse:false};
+}
+
+function showAlert({name,lo,headline,desc,exp}){
+  alertActive=true;
+  const s=severityStyle(name,lo);
+  const shortDesc=(desc||'').length>420?desc.slice(0,420).replace(/\s\S+$/,'')+'Ã¢ÂÂ¦':desc;
+  document.getElementById('alertSlot').innerHTML=`
+    <div class="alert-card${s.pulse?' pulse':''}" style="background:${s.bg};border:2.5px solid ${s.hdr}">
+      <div class="alert-top" style="background:${s.hdr}">
+        <div class="alert-top-left">
+          <div class="alert-icon-big">${s.icon}</div>
+          <div>
+            <div class="alert-event">${name.toUpperCase()}</div>
+            <div class="alert-source">National Weather Service &nbsp;ÃÂ·&nbsp; Lexington, KY 40515${exp?'&nbsp;ÃÂ·&nbsp; Expires '+exp:''}</div>
+          </div>
+        </div>
+        ${lo!=null?`<div class="alert-low-pill"><div class="alert-low-label">Tonight's Low</div><div class="alert-low-temp">${lo}ÃÂ°F</div></div>`:''}
+      </div>
+      <div class="alert-body">
+        <div class="alert-divider"></div>
+        ${headline?`<div class="alert-headline">${headline}</div>`:''}
+        ${shortDesc?`<div class="alert-desc">${shortDesc}</div>`:''}
+        <div class="alert-tags">
+          <span class="alert-tag">Ã°ÂÂÂ± Cover tender annuals &amp; perennials</span>
+          <span class="alert-tag">Ã°ÂÂÂ¡Ã¯Â¸Â Check greenhouse heaters</span>
+          <span class="alert-tag">Ã°ÂÂÂ§ Protect irrigation &amp; pipes</span>
+          <span class="alert-tag">Ã°ÂÂªÂ´ Move potted tropicals inside</span>
+        </div>
+      </div>
+    </div>`;
+  if(!document.getElementById('commentCard')) injectCommentCard();
+}
+
+function clearAlert(){
+  alertActive=false;
+  document.getElementById('alertSlot').innerHTML='';
+  if(postComments.length===0) document.getElementById('commentSlot').innerHTML='';
+}
+
+function injectCommentCard(){
+  document.getElementById('commentSlot').innerHTML=`
+    <div class="comment-card" id="commentCard">
+      <div class="card-header">
+        <span class="card-title">Ã°ÂÂÂ Frost / Freeze Event Ã¢ÂÂ Staff Observation Log</span>
+        <span class="badge badge-red">Log your observations</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.65">
+        Record plant damage, actions taken, areas affected, greenhouse temps, and anything else worth noting during or after this event. Entries are timestamped automatically.
+      </p>
+      <div class="comment-list" id="commentList">
+        <div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:4px 0">No observations logged yet.</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
+        <input id="commentAuthor" placeholder="Your name" style="width:160px">
+        <span style="font-size:11px;color:var(--text-muted)">then type your note Ã¢ÂÂ</span>
+      </div>
+      <div class="comment-input-row">
+        <textarea id="commentInput" placeholder="e.g. Covered flats in greenhouse 2. Heater holding at 48ÃÂ°F. Some wilting on exposed impatiens in lot C. Moved citrus inside."></textarea>
+        <button class="btn-green" onclick="addComment()" style="height:56px;align-self:flex-end;white-space:nowrap;padding:0 16px">Log Note</button>
+      </div>
+    </div>`;
+  renderComments();
+}
+
+function addComment(){
+  const ae=document.getElementById('commentAuthor'),ie=document.getElementById('commentInput');
+  if(!ae||!ie)return;
+  const body=ie.value.trim();
+  if(!body){ie.focus();return;}
+  postComments.push({who:ae.value.trim()||'Staff',body,ts:new Date().toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})});
+  ie.value='';
+  renderComments();
+}
+
+function renderComments(){
+  const el=document.getElementById('commentList');
+  if(!el)return;
+  if(!postComments.length){el.innerHTML='<div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:4px 0">No observations logged yet.</div>';return;}
+  el.innerHTML=postComments.map(c=>`<div class="comment-item"><div class="comment-meta">${c.who} &nbsp;ÃÂ·&nbsp; ${c.ts}</div><div class="comment-body">${c.body}</div></div>`).join('');
+  el.scrollTop=el.scrollHeight;
+}
+
+function demoAlert(){
+  showAlert({name:'Freeze Warning',lo:29,
+    headline:'Freeze Warning in effect from midnight tonight through 9 AM EST Thursday.',
+    desc:'A hard freeze is likely overnight with minimum temperatures dropping into the upper 20s. Frost-sensitive vegetation may be killed outright. Tender plants should be covered or brought indoors. Outdoor pipes and irrigation lines should be drained or insulated. Ensure greenhouse heating systems are set no lower than 40ÃÂ°F.',
+    exp:'Thu, Mar 27 Ã¢ÂÂ 9:00 AM EST'});
+}
+function demoGH(){
+  showGH([
+    'Ã°ÂÂÂ¡Ã¯Â¸Â Temp dropping to 42ÃÂ°F (Tonight)',
+    'Ã¢ÂÂÃ¯Â¸Â Severe Thunderstorm Watch in effect',
+    'Ã°ÂÂÂ¨ Wind gusts up to 52 mph (This Evening)'
+  ]);
+}
+function demoClear(){ clearAlert(); clearGH(); }
+
+// Ã¢ÂÂÃ¢ÂÂ GREENHOUSE WARNING CARD Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+function showGH(reasons){
+  document.getElementById('ghSlot').innerHTML=`
+    <div class="gh-card">
+      <div class="gh-top">
+        <div class="gh-top-left">
+          <div class="gh-icon">Ã°ÂÂÂ¡</div>
+          <div>
+            <div class="gh-headline">CLOSE ALL GREENHOUSES TONIGHT</div>
+            <div class="gh-sub">Weather conditions require greenhouse closure Ã¢ÂÂ see reasons below</div>
+          </div>
+        </div>
+      </div>
+      <div class="gh-body">
+        <div class="gh-divider"></div>
+        <div class="gh-reasons">
+          ${reasons.map(r=>`<span class="gh-reason">${r}</span>`).join('')}
+        </div>
+        <div class="gh-note">Close and latch all vents, doors, and roll-up sides before end of day. Verify heating systems are operational. Check back on this dashboard for updates.</div>
+      </div>
+    </div>`;
+}
+
+function clearGH(){
+  document.getElementById('ghSlot').innerHTML='';
+}
+
+// Ã¢ÂÂÃ¢ÂÂ AMBIENT WEATHER STATION Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+function deg2dir(d){return['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(d/22.5)%16]}
+
+async function connectStation(){
+  const api=document.getElementById('awApi').value.trim(),app=document.getElementById('awApp').value.trim();
+  const st=document.getElementById('stStatus');
+  if(!api||!app){st.textContent='Ã¢ÂÂ  Enter both keys first.';return;}
+  st.textContent='ConnectingÃ¢ÂÂ¦';
+  try{
+    const data=await(await fetch(`https://api.ambientweather.net/v1/devices?applicationKey=${app}&apiKey=${api}`)).json();
+    if(!Array.isArray(data)||!data.length){st.textContent='Ã¢ÂÂ  No devices found.';return;}
+    localStorage.setItem('kgAwApi',api);
+    localStorage.setItem('kgAwApp',app);
+    applyStation(data[0].lastData);
+    const ts=new Date(data[0].lastData.dateutc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    st.textContent=`Ã¢ÂÂ Connected ÃÂ· last update ${ts} ÃÂ· keys saved`;
+    startStationRefresh(api,app);
+  }catch(e){st.textContent='Ã¢ÂÂ  Error: '+e.message;}
+}
+
+function startStationRefresh(api,app){
+  const st=document.getElementById('stStatus');
+  clearInterval(window._stInt);
+  window._stInt=setInterval(async()=>{
+    try{
+      const d2=await(await fetch(`https://api.ambientweather.net/v1/devices?applicationKey=${app}&apiKey=${api}`)).json();
+      if(Array.isArray(d2)&&d2.length){applyStation(d2[0].lastData);const ts2=new Date(d2[0].lastData.dateutc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});st.textContent=`Ã¢ÂÂ Connected ÃÂ· last update ${ts2}`;}
+    }catch(e){st.textContent='Ã¢ÂÂ  Refresh error: '+e.message;}
+  },5*60*1000);
+}
+
+function autoConnectStation(){
+  const api=localStorage.getItem('kgAwApi'),app=localStorage.getItem('kgAwApp');
+  if(!api||!app)return;
+  document.getElementById('awApi').value=api;
+  document.getElementById('awApp').value=app;
+  const st=document.getElementById('stStatus');
+  st.textContent='Auto-connecting with saved keysÃ¢ÂÂ¦';
+  fetch(`https://api.ambientweather.net/v1/devices?applicationKey=${app}&apiKey=${api}`)
+    .then(r=>r.json())
+    .then(data=>{
+      if(!Array.isArray(data)||!data.length){st.textContent='Ã¢ÂÂ  No devices found.';return;}
+      applyStation(data[0].lastData);
+      const ts=new Date(data[0].lastData.dateutc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+      st.textContent=`Ã¢ÂÂ Auto-connected ÃÂ· last update ${ts}`;
+      startStationRefresh(api,app);
+    })
+    .catch(e=>{st.textContent='Ã¢ÂÂ  Auto-connect failed: '+e.message;});
+}
+
+function clearStationKeys(){
+  localStorage.removeItem('kgAwApi');
+  localStorage.removeItem('kgAwApp');
+  document.getElementById('awApi').value='';
+  document.getElementById('awApp').value='';
+  document.getElementById('stStatus').textContent='Keys cleared. Enter new keys to reconnect.';
+  clearInterval(window._stInt);
+}
+
+function applyStation(d){setStation(d.tempf??null,d.humidity??null,d.windspeedmph??null,d.winddir!=null?deg2dir(d.winddir):null,d.dailyrainin??null)}
+
+function setStation(t,h,w,wd,r){
+  document.getElementById('st-temp').textContent=t!=null?Math.round(t)+'ÃÂ°F':'--ÃÂ°F';
+  document.getElementById('st-temp-sub').textContent=t!=null?(t<=32?'Ã¢ÂÂ Ã¯Â¸Â At/below freezing':t<=36?'Ã¢ÂÂ Ã¯Â¸Â Frost risk':'Normal'):'Ã¢ÂÂ';
+  document.getElementById('st-hum').textContent=h!=null?Math.round(h)+'%':'--%';
+  document.getElementById('st-wind').textContent=w!=null?Math.round(w)+' mph':'-- mph';
+  document.getElementById('st-wind-dir').textContent=wd||'Ã¢ÂÂ';
+  document.getElementById('st-rain').textContent=r!=null?r.toFixed(2)+' in':'-- in';
+}
+
+function manualStation(){
+  const t=parseFloat(document.getElementById('m-temp').value),h=parseFloat(document.getElementById('m-hum').value);
+  const w=parseFloat(document.getElementById('m-wind').value),r=parseFloat(document.getElementById('m-rain').value);
+  setStation(isNaN(t)?null:t,isNaN(h)?null:h,isNaN(w)?null:w,null,isNaN(r)?null:r);
+}
+
+// Ã¢ÂÂÃ¢ÂÂ STAFF MESSAGE Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+function postMessage(){
+  const v=document.getElementById('msgInput').value.trim();
+  if(!v)return;
+  document.getElementById('msgBody').textContent=v;
+  document.getElementById('msgInput').value='';
+  document.getElementById('msgTs').textContent='Updated '+new Date().toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+}
+
+// Ã¢ÂÂÃ¢ÂÂ DELIVERY CALENDAR Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+let calView=new Date(),calSel=null,calEvs={};
+function fmtKey(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function changeMonth(dir){calView=new Date(calView.getFullYear(),calView.getMonth()+dir,1);renderCal()}
+function selectDay(k){calSel=k;renderCal();const d=new Date(k+'T12:00:00');document.getElementById('calDateLbl').textContent=d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});renderEvList()}
+
+function renderCal(){
+  const y=calView.getFullYear(),m=calView.getMonth();
+  document.getElementById('calMonthLbl').textContent=calView.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const fd=new Date(y,m,1).getDay(),dim=new Date(y,m+1,0).getDate(),tk=fmtKey(new Date());
+  let h=['S','M','T','W','T','F','S'].map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  for(let i=0;i<fd;i++)h+='<div></div>';
+  for(let d=1;d<=dim;d++){
+    const k=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const c=['cal-day',k===tk?'today':'',k===calSel&&k!==tk?'selected':'',calEvs[k]?.length?'has-event':''].filter(Boolean).join(' ');
+    h+=`<div class="${c}" onclick="selectDay('${k}')">${d}</div>`;
+  }
+  document.getElementById('calGrid').innerHTML=h;
+}
+
+function renderEvList(){
+  const el=document.getElementById('eventList'),evs=calEvs[calSel]||[];
+  if(!evs.length){el.innerHTML='<div style="font-size:12px;color:var(--text-muted)">No deliveries scheduled for this date.</div>';return;}
+  const dc={delivery:'dot-delivery',vendor:'dot-vendor',misc:'dot-misc'};
+  el.innerHTML=evs.map((e,i)=>`<div class="event-item"><span class="ev-dot ${dc[e.type]||'dot-misc'}"></span><span class="ev-name">${e.name}</span><span class="ev-time">${e.time}</span><span class="ev-del" onclick="deleteEvent(${i})" title="Remove">Ã¢ÂÂ</span></div>`).join('');
+}
+
+function addEvent(){
+  if(!calSel){alert('Select a date first.');return;}
+  const name=document.getElementById('evName').value.trim();
+  if(!name)return;
+  const time=document.getElementById('evTime').value.trim(),type=document.getElementById('evType').value;
+  if(!calEvs[calSel])calEvs[calSel]=[];
+  calEvs[calSel].push({name,time,type});
+  document.getElementById('evName').value='';document.getElementById('evTime').value='';
+  renderCal();renderEvList();
+}
+
+function deleteEvent(i){calEvs[calSel].splice(i,1);renderCal();renderEvList()}
+
+
+// Ã¢ÂÂÃ¢ÂÂ GROWING DEGREE DAYS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// Source: Open-Meteo ERA5 reanalysis Ã¢ÂÂ free, no API key, full CORS.
+// Matches UK Ag Weather Center values closely (verified 226 vs 226).
+
+let gddBase=50, gddData=[], gddPriorData=[];
+
+const GDD_MILESTONES={
+  50:[
+    {gdd:50,  icon:'Ã°ÂÂÂ¸',name:'Forsythia first bloom'},
+    {gdd:100, icon:'Ã°ÂÂÂ¸',name:'Forsythia peak bloom'},
+    {gdd:200, icon:'Ã°ÂÂÂ·',name:'Tulip & daffodil peak'},
+    {gdd:350, icon:'Ã°ÂÂÂ',name:'Crabapple bloom'},
+    {gdd:500, icon:'Ã°ÂÂÂ¿',name:'Lilac full bloom'},
+    {gdd:700, icon:'Ã°ÂÂÂ¹',name:'Rose first flush'},
+    {gdd:1000,icon:'Ã°ÂÂ¦Â',name:'Japanese beetle emergence'},
+    {gdd:1350,icon:'Ã°ÂÂÂ»',name:'Coneflower / rudbeckia bloom'},
+  ],
+  40:[
+    {gdd:150, icon:'Ã°ÂÂÂ±',name:'Cool-season seed germination'},
+    {gdd:300, icon:'Ã°ÂÂ¥Â¬',name:'Lettuce / spinach transplant'},
+    {gdd:600, icon:'Ã°ÂÂÂ¸',name:'Pansy peak color'},
+    {gdd:900, icon:'Ã°ÂÂÂ¿',name:'Perennial ground cover est.'},
+    {gdd:1400,icon:'Ã°ÂÂÂ»',name:'Warm-season planting safe'},
+    {gdd:2000,icon:'Ã°ÂÂÂ',name:'Fall planting window opens'},
+  ],
+  32:[
+    {gdd:200, icon:'Ã°ÂÂÂ±',name:'Soil workable Ã¢ÂÂ early seeding'},
+    {gdd:500, icon:'Ã°ÂÂÂ¸',name:'Early spring bloomers peak'},
+    {gdd:1000,icon:'Ã°ÂÂÂ¿',name:'Full canopy leaf-out'},
+    {gdd:1800,icon:'Ã°ÂÂÂ»',name:'Mid-summer annuals peak'},
+    {gdd:2800,icon:'Ã°ÂÂÂ',name:'First fall color'},
+    {gdd:3500,icon:'Ã¢ÂÂÃ¯Â¸Â', name:'Hardening off / dormancy'},
+  ]
+};
+const GDD_MAX={50:2500,40:3500,32:5000};
+
+function setGDDBase(base){
+  gddBase=base;
+  [50,40,32].forEach(b=>document.getElementById('gddBtn'+b).classList.toggle('active',b===base));
+  renderGDD();
+}
+
+function openMeteoUrl(start,end){
+  return 'https://archive-api.open-meteo.com/v1/archive'
+    +'?latitude=38.0406&longitude=-84.5037'
+    +'&start_date='+start+'&end_date='+end
+    +'&daily=temperature_2m_max,temperature_2m_min'
+    +'&temperature_unit=fahrenheit&timezone=America%2FNew_York';
+}
+
+async function fetchOpenMeteoGDD(start,end,base){
+  const r=await fetch(openMeteoUrl(start,end));
+  const d=await r.json();
+  const dates=d.daily?.time||[],maxT=d.daily?.temperature_2m_max||[],minT=d.daily?.temperature_2m_min||[];
+  const rows=[];let total=0;
+  for(let i=0;i<dates.length;i++){
+    if(maxT[i]==null||minT[i]==null)continue;
+    const gdd=Math.max(0,(maxT[i]+minT[i])/2-base);
+    total+=gdd;
+    rows.push({date:dates[i],maxT:Math.round(maxT[i]),minT:Math.round(minT[i]),gdd:Math.round(gdd*10)/10,total:Math.round(total)});
+  }
+  return rows;
+}
+
+async function fetchGDD(){
+  const badge=document.getElementById('gddBadge'),statusEl=document.getElementById('gddStatus');
+  badge.textContent='LoadingÃ¢ÂÂ¦';badge.style.background='';badge.style.color='';
+  const si=document.getElementById('gddStartDate');
+  const curYear=new Date().getFullYear();
+  if(!si.value)si.value=curYear+'-01-01';
+  const startDate=si.value;
+  const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
+  const endDate=yesterday.toISOString().slice(0,10);
+  const sYear=parseInt(startDate.slice(0,4)),priorYear=sYear-1;
+  const priorStart=priorYear+startDate.slice(4),priorEnd=priorYear+endDate.slice(4);
+  document.getElementById('gddDaysCount').textContent='';
+  statusEl.textContent='Fetching from Open-MeteoÃ¢ÂÂ¦';
+  try{
+    const [thisRows,priorRows]=await Promise.all([
+      fetchOpenMeteoGDD(startDate,endDate,gddBase),
+      fetchOpenMeteoGDD(priorStart,priorEnd,gddBase)
+    ]);
+    gddData=thisRows;gddPriorData=priorRows;
+    if(!gddData.length){badge.textContent='No data';statusEl.textContent='No data returned.';return;}
+    badge.textContent='Ã¢ÂÂ Live';badge.style.background='var(--green-pale)';badge.style.color='var(--green)';
+    statusEl.textContent=gddData.length+' days ÃÂ· Lexington KY ÃÂ· Open-Meteo ERA5';
+    document.getElementById('gddYearLabel').textContent=sYear;
+    document.getElementById('gddPriorYear').textContent=priorYear+' (same date)';
+    document.getElementById('gddDaysCount').textContent=gddData.length+' days';
+    renderGDD();
+  }catch(err){badge.textContent='Error';statusEl.textContent='Could not load: '+err.message;}
+}
+
+function renderGDD(){
+  if(!gddData.length)return;
+  const thisTotal=gddData[gddData.length-1].total;
+  const priorTotal=gddPriorData.length?gddPriorData[gddPriorData.length-1].total:null;
+  const pct=Math.min(100,Math.round(thisTotal/GDD_MAX[gddBase]*100));
+  document.getElementById('gddTotal').textContent=thisTotal.toLocaleString();
+  document.getElementById('gddBar').style.width=pct+'%';
+  document.getElementById('gddPct').textContent=pct+'%';
+  const sv=document.getElementById('gddStartDate').value;
+  if(sv){const d=new Date(sv+'T12:00:00');document.getElementById('gddSince').textContent='since '+d.toLocaleDateString('en-US',{month:'short',day:'numeric'});}
+  const priorEl=document.getElementById('gddPriorTotal'),deltaEl=document.getElementById('gddDelta');
+  if(priorTotal!=null){
+    priorEl.textContent=priorTotal.toLocaleString();
+    const diff=thisTotal-priorTotal;
+    deltaEl.textContent=(diff>=0?'+':'')+diff;
+    deltaEl.style.color=diff>0?'var(--green)':diff<0?'var(--red)':'var(--text-muted)';
+  }else{priorEl.textContent='--';deltaEl.textContent='';}
+  const el=document.getElementById('gddMilestones');
+  el.innerHTML=(GDD_MILESTONES[gddBase]||[]).map(m=>{
+    const reached=thisTotal>=m.gdd,remaining=m.gdd-thisTotal,priorReach=priorTotal!=null&&priorTotal>=m.gdd;
+    return `<div class="gdd-milestone${reached?' gdd-ms-reached':''}"><span class="gdd-ms-dot${reached?'':' gdd-ms-dot-pending'}"></span><span style="font-size:14px;line-height:1">${m.icon}</span><span class="gdd-ms-name">${m.name}</span><span class="gdd-ms-val">${reached?'Ã¢ÂÂ '+m.gdd:remaining+' to go'}</span>${priorTotal!=null?`<span style="font-size:10px;color:var(--text-muted);margin-left:2px">${priorReach?'(Ã¢ÂÂ last yr)':''}</span>`:''}</div>`;
+  }).join('');
+}
+
+// Ã¢ÂÂÃ¢ÂÂ INIT Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+fetchNWS();
+fetchGDD();
+autoConnectStation();
+renderCal();
+selectDay(fmtKey(new Date()));
+setInterval(fetchNWS,15*60*1000);
+setInterval(fetchGDD,60*60*1000);
+</script>
+</body>
+</html>
+// ── AUTH (Firebase-backed) ────────────────────────
+// Users stored in Firestore 'users' collection keyed by email hash
+// Session stored in localStorage for tab persistence
+
+function simpleHash(str){let h=0;for(let i=0;i<str.length;i++)h=(Math.imul(31,h)+str.charCodeAt(i))|0;return h.toString(36);}
+
+function getCurrentUser(){
+  try{return JSON.parse(localStorage.getItem('kgCurrentUser')||'null');}catch(e){return null;}
+}
+
+async function doSignIn(){
+  const email=document.getElementById('siEmail').value.trim().toLowerCase();
+  const pass=document.getElementById('siPass').value;
+  const errEl=document.getElementById('loginErr');
+  if(!email||!pass){errEl.textContent='Please enter email and password.';return;}
+  errEl.textContent='Signing in...';
+  try{
+    if(window.__db){
+      const {doc,getDoc}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const snap=await getDoc(doc(window.__db,'users',simpleHash(email)));
+      if(!snap.exists()||snap.data().passHash!==simpleHash(pass)){
+        // Fall back to localStorage users for backwards compat
+        const lsUsers=JSON.parse(localStorage.getItem('kgUsers')||'[]');
+        const lsUser=lsUsers.find(u=>u.email===email&&u.passHash===simpleHash(pass));
+        if(!lsUser){errEl.textContent='Email or password not found.';return;}
+        onLoggedIn({email:lsUser.email,name:lsUser.name});
+        return;
+      }
+      const data=snap.data();
+      localStorage.setItem('kgCurrentUser',JSON.stringify({email,name:data.name}));
+      onLoggedIn({email,name:data.name});
+    } else {
+      const users=JSON.parse(localStorage.getItem('kgUsers')||'[]');
+      const user=users.find(u=>u.email===email&&u.passHash===simpleHash(pass));
+      if(!user){errEl.textContent='Email or password not found.';return;}
+      localStorage.setItem('kgCurrentUser',JSON.stringify({email:user.email,name:user.name}));
+      onLoggedIn(user);
+    }
+  }catch(e){errEl.textContent='Sign in error: '+e.message;}
+}
+
+async function doRegister(){
+  const name=document.getElementById('regName').value.trim();
+  const email=document.getElementById('regEmail').value.trim().toLowerCase();
+  const pass=document.getElementById('regPass').value;
+  const errEl=document.getElementById('loginErr');
+  if(!name||!email||!pass){errEl.textContent='All fields required.';return;}
+  if(pass.length<6){errEl.textContent='Password must be at least 6 characters.';return;}
+  errEl.textContent='Creating account...';
+  try{
+    if(window.__db){
+      const {doc,getDoc,setDoc}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const existing=await getDoc(doc(window.__db,'users',simpleHash(email)));
+      if(existing.exists()){errEl.textContent='An account with that email already exists.';return;}
+      await setDoc(doc(window.__db,'users',simpleHash(email)),{email,name,passHash:simpleHash(pass),createdAt:new Date().toISOString()});
+    } else {
+      const users=JSON.parse(localStorage.getItem('kgUsers')||'[]');
+      if(users.find(u=>u.email===email)){errEl.textContent='An account with that email already exists.';return;}
+      users.push({email,name,passHash:simpleHash(pass)});
+      localStorage.setItem('kgUsers',JSON.stringify(users));
+    }
+    localStorage.setItem('kgCurrentUser',JSON.stringify({email,name}));
+    onLoggedIn({email,name});
+  }catch(e){errEl.textContent='Register error: '+e.message;}
+}
+
+
