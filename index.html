@@ -239,6 +239,17 @@ button:hover{opacity:.85}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
 
+/* CALENDAR SUMMARY */
+.sum-cat{background:var(--surface);border-radius:10px;padding:10px 12px}
+.sum-cat-hdr{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.sum-cat-icon{font-size:16px;line-height:1}
+.sum-cat-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted)}
+.sum-cat-count{margin-left:auto;font-size:11px;font-weight:600;color:var(--text-mid)}
+.sum-entry{font-size:12px;color:var(--text);padding:4px 0;border-bottom:1px solid var(--border);display:flex;gap:6px;align-items:baseline}
+.sum-entry:last-child{border-bottom:none}
+.sum-entry-date{font-size:10px;color:var(--text-muted);white-space:nowrap;flex-shrink:0}
+.sum-empty{font-size:12px;color:var(--text-muted);font-style:italic;padding:4px 0}
+
 @media(max-width:1000px){.grid{grid-template-columns:1fr 1fr}.span3,.alert-card,.comment-card,.gh-card{grid-column:span 2}}
 @media(max-width:640px){.grid{grid-template-columns:1fr}.span2,.span3,.alert-card,.comment-card,.gh-card{grid-column:span 1}.cal-wrap,.alert-top,.gh-top{flex-direction:column}}
 </style>
@@ -427,8 +438,8 @@ button:hover{opacity:.85}
   <!-- DELIVERY CALENDAR -->
   <div class="card span3">
     <div class="card-header">
-      <span class="card-title">Delivery Calendar</span>
-      <span class="badge badge-blue">Trucks In</span>
+      <span class="card-title">Calendar Log</span>
+      <span class="badge badge-blue">Events</span>
     </div>
     <div class="cal-wrap">
       <div class="cal-left">
@@ -440,19 +451,31 @@ button:hover{opacity:.85}
         <div class="cal-grid" id="calGrid"></div>
       </div>
       <div class="cal-right">
-        <div class="cal-date-lbl" id="calDateLbl">Select a date to view or add deliveries</div>
-        <div class="event-list" id="eventList"><div style="font-size:12px;color:var(--text-muted)">No deliveries scheduled.</div></div>
+        <div class="cal-date-lbl" id="calDateLbl">Select a date to view or add events</div>
+        <div class="event-list" id="eventList"><div style="font-size:12px;color:var(--text-muted)">No events scheduled.</div></div>
         <div class="event-add">
-          <input class="ev-name-in" id="evName" placeholder="Vendor / description">
+          <input class="ev-name-in" id="evName" placeholder="Description">
           <input class="ev-time-in" id="evTime" placeholder="Time (e.g. 8am)">
           <select id="evType">
-            <option value="delivery">🚚 Delivery In</option>
-            <option value="vendor">🏭 Vendor Visit</option>
-            <option value="misc">📋 Other</option>
+            <option value="delivery">🚚 Incoming Trucks</option>
+            <option value="vendor">📣 Marquee</option>
+            <option value="misc">💰 Sales</option>
           </select>
           <button class="btn-blue" onclick="addEvent()">+ Add</button>
         </div>
       </div>
+    </div>
+    <!-- MONTHLY SUMMARY -->
+    <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-muted)">Monthly Summary</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <button class="cal-nav-btn" onclick="changeSumMonth(-1)">‹</button>
+          <span style="font-size:12px;font-weight:600;min-width:110px;text-align:center" id="sumMonthLbl"></span>
+          <button class="cal-nav-btn" onclick="changeSumMonth(1)">›</button>
+        </div>
+      </div>
+      <div id="calSummary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
     </div>
   </div>
 
@@ -821,10 +844,60 @@ function addEvent(){
   if(!calEvs[calSel])calEvs[calSel]=[];
   calEvs[calSel].push({name,time,type});
   document.getElementById('evName').value='';document.getElementById('evTime').value='';
-  renderCal();renderEvList();
+  renderCal();renderEvList();renderCalSummary();
 }
 
-function deleteEvent(i){calEvs[calSel].splice(i,1);renderCal();renderEvList()}
+function deleteEvent(i){calEvs[calSel].splice(i,1);renderCal();renderEvList();renderCalSummary();}
+
+// ── CALENDAR MONTHLY SUMMARY ──────────────────────
+let sumView = new Date();
+
+function changeSumMonth(dir){
+  sumView = new Date(sumView.getFullYear(), sumView.getMonth()+dir, 1);
+  renderCalSummary();
+}
+
+function renderCalSummary(){
+  const y = sumView.getFullYear(), m = sumView.getMonth();
+  document.getElementById('sumMonthLbl').textContent =
+    sumView.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+
+  const cats = [
+    {key:'delivery', icon:'🚚', label:'Incoming Trucks'},
+    {key:'vendor',   icon:'📣', label:'Marquee'},
+    {key:'misc',     icon:'💰', label:'Sales'},
+  ];
+
+  // Gather all events for this month grouped by category
+  const dim = new Date(y, m+1, 0).getDate();
+  const grouped = {delivery:[], vendor:[], misc:[]};
+  for(let d=1; d<=dim; d++){
+    const k = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    (calEvs[k]||[]).forEach(ev => {
+      const cat = grouped[ev.type] || grouped.misc;
+      (grouped[ev.type] ? grouped[ev.type] : grouped.misc).push({
+        date: new Date(k+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}),
+        name: ev.name,
+        time: ev.time
+      });
+    });
+  }
+
+  document.getElementById('calSummary').innerHTML = cats.map(cat => {
+    const entries = grouped[cat.key] || [];
+    const rows = entries.length
+      ? entries.map(e => `<div class="sum-entry"><span class="sum-entry-date">${e.date}${e.time?' · '+e.time:''}</span><span>${e.name}</span></div>`).join('')
+      : '<div class="sum-empty">Nothing logged yet.</div>';
+    return `<div class="sum-cat">
+      <div class="sum-cat-hdr">
+        <span class="sum-cat-icon">${cat.icon}</span>
+        <span class="sum-cat-title">${cat.label}</span>
+        <span class="sum-cat-count">${entries.length}</span>
+      </div>
+      ${rows}
+    </div>`;
+  }).join('');
+}
 
 // ── MONTHLY TO-DO LIST ────────────────────────────
 // Storage key: todoData = { "2026-07": [{text, done}, ...], ... }
@@ -1185,6 +1258,7 @@ autoConnectHydrawise();
 renderCal();
 selectDay(fmtKey(new Date()));
 initTodo();
+renderCalSummary();
 setInterval(fetchNWS,15*60*1000);
 setInterval(fetchGDD,60*60*1000);
 </script>
