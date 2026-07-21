@@ -1306,8 +1306,7 @@ async function loadFromGitHub(){
     if(!res.ok) throw new Error('HTTP '+res.status);
     const meta = await res.json();
     syncSHA = meta.sha;
-    const data = JSON.parse(atob(meta.content.replace(/
-/g,'')));
+    const data = JSON.parse(atob(meta.content.split('\n').join('')));
     // Apply calendar events
     if(data.calEvs) calEvs = data.calEvs;
     // Apply todo data
