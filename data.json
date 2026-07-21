@@ -17,6 +17,11 @@
         "name": "Millcreek",
         "time": "9a",
         "type": "delivery"
+      },
+      {
+        "name": "Willoway",
+        "time": "10a",
+        "type": "delivery"
       }
     ]
   },
