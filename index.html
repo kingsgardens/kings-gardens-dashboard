@@ -130,6 +130,33 @@ button:hover{opacity:.85}
 .msg-edit textarea{flex:1;min-height:60px;resize:vertical}
 .msg-ts{font-size:10px;color:var(--text-muted)}
 
+/* MONTHLY TO-DO */
+.todo-tabs{display:flex;gap:2px;margin-bottom:10px;flex-wrap:wrap}
+.todo-tab{font-size:10px;font-weight:700;padding:4px 8px;border-radius:6px;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text-muted);transition:all .15s;letter-spacing:.3px}
+.todo-tab.active{border-color:var(--green-mid);background:var(--green-pale);color:var(--green)}
+.todo-tab:hover:not(.active){background:var(--green-pale);color:var(--green)}
+.todo-tab.has-items::after{content:'·';margin-left:3px;color:var(--green-mid)}
+.todo-year-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.todo-year-btn{width:20px;height:20px;border:1px solid var(--border);background:var(--surface);border-radius:5px;font-size:12px;display:flex;align-items:center;justify-content:center;color:var(--text-mid);padding:0;cursor:pointer;flex-shrink:0}
+.todo-year-btn:hover{background:var(--green-pale)}
+.todo-year-lbl{font-size:12px;font-weight:600;color:var(--text-mid);min-width:36px;text-align:center}
+.todo-list{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;min-height:60px;max-height:220px;overflow-y:auto}
+.todo-item{display:flex;align-items:flex-start;gap:8px;padding:6px 8px;border-radius:7px;background:var(--surface)}
+.todo-item:hover{background:var(--green-pale)}
+.todo-cb{width:15px;height:15px;accent-color:var(--green);cursor:pointer;flex-shrink:0;margin-top:1px}
+.todo-text{font-size:13px;color:var(--text);flex:1;line-height:1.4;word-break:break-word}
+.todo-text.done{text-decoration:line-through;color:var(--text-muted)}
+.todo-del{cursor:pointer;color:var(--text-muted);font-size:12px;padding:0 2px;flex-shrink:0;opacity:0}
+.todo-item:hover .todo-del{opacity:1}
+.todo-del:hover{color:var(--red)}
+.todo-input-row{display:flex;gap:6px}
+.todo-input-row input{flex:1;font-size:13px}
+.todo-prior{margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.todo-prior-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
+.todo-prior-item{display:flex;align-items:center;gap:7px;padding:4px 6px;border-radius:6px;font-size:12px;color:var(--text-muted);cursor:pointer}
+.todo-prior-item:hover{background:var(--green-pale);color:var(--green)}
+.todo-empty{font-size:12px;color:var(--text-muted);font-style:italic;padding:4px 0}
+
 /* CALENDAR */
 .cal-wrap{display:flex;gap:16px}
 .cal-left{flex-shrink:0}
@@ -164,46 +191,44 @@ button:hover{opacity:.85}
 .event-add select{width:110px}
 
 /* GDD CARD */
-.gdd-hero{display:flex;align-items:flex-end;gap:6px;margin-bottom:14px}
-.gdd-number{font-size:52px;font-weight:300;line-height:1;letter-spacing:-2px;color:var(--text)}
-.gdd-unit{font-size:16px;color:var(--text-muted);margin-bottom:8px}
+.gdd-hero{display:flex;align-items:flex-end;gap:6px;margin-bottom:10px}
+.gdd-number{font-size:48px;font-weight:300;line-height:1;letter-spacing:-2px;color:var(--text)}
+.gdd-unit{font-size:15px;color:var(--text-muted);margin-bottom:7px}
 .gdd-label{font-size:12px;color:var(--text-muted);margin-bottom:8px;padding-left:2px}
-.gdd-bases{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
-.gdd-base-btn{padding:6px 0;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text-muted);transition:all .15s;text-align:center}
+.gdd-bases{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.gdd-base-btn{padding:5px 0;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text-muted);transition:all .15s;text-align:center}
 .gdd-base-btn.active{border-color:var(--green-mid);background:var(--green-pale);color:var(--green)}
 .gdd-base-btn:hover:not(.active){background:var(--green-pale);color:var(--green)}
-.gdd-bar-wrap{margin-bottom:12px}
+.gdd-bar-wrap{margin-bottom:10px}
 .gdd-bar-label{display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
-.gdd-bar-track{height:8px;background:var(--surface);border-radius:20px;border:1px solid var(--border);overflow:hidden}
+.gdd-bar-track{height:7px;background:var(--surface);border-radius:20px;border:1px solid var(--border);overflow:hidden}
 .gdd-bar-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--green-mid),var(--green));transition:width .6s ease}
-.gdd-milestones{display:flex;flex-direction:column;gap:5px}
-.gdd-milestone{display:flex;align-items:center;gap:8px;font-size:12px;padding:5px 8px;border-radius:7px;background:var(--surface)}
-.gdd-ms-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.gdd-milestones{display:flex;flex-direction:column;gap:4px}
+.gdd-milestone{display:flex;align-items:center;gap:7px;font-size:11px;padding:4px 7px;border-radius:7px;background:var(--surface)}
+.gdd-ms-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:var(--border)}
 .gdd-ms-name{flex:1;color:var(--text-mid)}
-.gdd-ms-val{color:var(--text-muted);font-size:11px}
+.gdd-ms-val{color:var(--text-muted);font-size:10px}
 .gdd-ms-reached{background:var(--green-pale)}
 .gdd-ms-reached .gdd-ms-name{color:var(--green);font-weight:500}
 .gdd-ms-reached .gdd-ms-dot{background:var(--green-mid)}
-.gdd-ms-dot-pending{background:var(--border)}
-.gdd-reset-row{display:flex;gap:8px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.gdd-reset-row{display:flex;gap:6px;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);flex-wrap:wrap}
 .gdd-reset-row label{font-size:11px;color:var(--text-muted);white-space:nowrap}
-.gdd-status{font-size:11px;color:var(--text-muted);margin-top:6px;min-height:14px}
 
 /* IRRIGATION CARD */
 .irr-key-row{display:flex;gap:6px;align-items:center;margin-bottom:6px}
-.irr-key-row label{font-size:11px;color:var(--text-muted);white-space:nowrap;width:52px;flex-shrink:0}
+.irr-key-row label{font-size:11px;color:var(--text-muted);white-space:nowrap;flex-shrink:0}
 .irr-key-row input{flex:1;font-size:12px;padding:5px 8px}
-.irr-zones{display:flex;flex-direction:column;gap:6px;margin-top:4px}
-.irr-zone{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:var(--surface);font-size:12px}
+.irr-zones{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+.irr-zone{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:8px;background:var(--surface);font-size:12px}
 .irr-zone.active{background:#e8f4e8;border:1px solid var(--green-mid)}
 .irr-zone-num{width:22px;height:22px;border-radius:50%;background:var(--border);color:var(--text-muted);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .irr-zone.active .irr-zone-num{background:var(--green-mid);color:#fff}
 .irr-zone-name{flex:1;font-weight:500;color:var(--text)}
 .irr-zone-next{font-size:11px;color:var(--text-muted);text-align:right}
 .irr-zone-next.running{color:var(--green);font-weight:600}
-.irr-controller{font-size:11px;color:var(--text-muted);margin-bottom:10px;display:flex;align-items:center;gap:6px}
-.irr-dot{width:7px;height:7px;border-radius:50%;background:var(--border);flex-shrink:0}
+.irr-dot{width:7px;height:7px;border-radius:50%;background:var(--border);flex-shrink:0;display:inline-block;margin-right:4px}
 .irr-dot.online{background:var(--green-mid)}
+.irr-status{font-size:11px;color:var(--text-muted);margin-top:5px;min-height:14px;display:flex;align-items:center}
 
 /* FOOTER */
 .footer{text-align:center;font-size:11px;color:var(--text-muted);padding:8px 0 20px}
@@ -264,13 +289,10 @@ button:hover{opacity:.85}
       <div class="st-box"><div class="st-label">Rain Today</div><div class="st-val" id="st-rain">-- in</div><div class="st-sub">Accumulation</div></div>
     </div>
     <div style="margin-top:10px;padding:7px 10px;background:var(--blue-pale);border-radius:7px;font-size:11px;color:var(--blue)">
-      💡 Keys are saved in this browser automatically after connecting.
+      💡 Enter your Ambient Weather API + Application keys to auto-connect.
     </div>
     <div class="key-row"><label>API Key</label><input type="password" id="awApi" placeholder="Ambient API Key"><button class="btn-blue" onclick="connectStation()" style="white-space:nowrap">Connect</button></div>
     <div class="key-row"><label>App Key</label><input type="password" id="awApp" placeholder="Application Key"></div>
-    <div style="display:flex;justify-content:flex-end;margin-top:4px">
-      <button onclick="clearStationKeys()" style="font-size:10px;background:none;border:none;color:var(--text-muted);cursor:pointer;padding:0;text-decoration:underline">Clear saved keys</button>
-    </div>
     <div class="st-status" id="stStatus"></div>
     <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px">
       <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Manual entry</div>
@@ -297,6 +319,32 @@ button:hover{opacity:.85}
     </div>
   </div>
 
+  <!-- MONTHLY TO-DO LIST -->
+  <div class="card span2" id="todoCard">
+    <div class="card-header">
+      <span class="card-title">Monthly To-Do List</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="todo-year-row" style="margin-bottom:0">
+          <button class="todo-year-btn" onclick="changeTodoYear(-1)">‹</button>
+          <span class="todo-year-lbl" id="todoYearLbl">2026</span>
+          <button class="todo-year-btn" onclick="changeTodoYear(1)">›</button>
+        </div>
+        <span class="badge badge-blue" id="todoBadge">0 items</span>
+      </div>
+    </div>
+    <!-- Month tabs -->
+    <div class="todo-tabs" id="todoTabs"></div>
+    <!-- Items for selected month/year -->
+    <div class="todo-list" id="todoList"></div>
+    <!-- Add input -->
+    <div class="todo-input-row">
+      <input id="todoInput" placeholder="Add a task for this month…" onkeydown="if(event.key==='Enter')addTodoItem()">
+      <button class="btn-green" onclick="addTodoItem()" style="white-space:nowrap">+ Add</button>
+    </div>
+    <!-- Prior year reference -->
+    <div class="todo-prior" id="todoPrior"></div>
+  </div>
+
   <!-- COMMENT SLOT: observation log card injected here when alert fires -->
   <div id="commentSlot" style="display:contents"></div>
 
@@ -306,24 +354,23 @@ button:hover{opacity:.85}
       <span class="card-title">Growing Degree Days — Lexington KY</span>
       <span class="badge badge-live" id="gddBadge">Loading…</span>
     </div>
-    <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
+    <div style="display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap">
       <!-- Left: totals + base selector -->
-      <div style="flex:0 0 auto;min-width:160px">
-        <!-- This year -->
-        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px" id="gddYearLabel">2026</div>
+      <div style="flex:0 0 auto;min-width:150px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:3px" id="gddYearLabel">2026</div>
         <div class="gdd-hero">
           <div class="gdd-number" id="gddTotal">--</div>
           <div><div class="gdd-unit">GDD</div><div class="gdd-label" id="gddSince">since Jan 1</div></div>
         </div>
         <!-- Prior year comparison -->
-        <div style="background:var(--surface);border-radius:8px;padding:8px 10px;margin-bottom:12px">
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:4px">Same date last year</div>
-          <div style="display:flex;align-items:baseline;gap:6px">
-            <span style="font-size:22px;font-weight:500;color:var(--text-mid)" id="gddPriorTotal">--</span>
-            <span style="font-size:12px;color:var(--text-muted)">GDD</span>
-            <span style="font-size:11px;font-weight:600;margin-left:4px" id="gddDelta"></span>
+        <div style="background:var(--surface);border-radius:8px;padding:7px 9px;margin-bottom:10px">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:3px">Same date last year</div>
+          <div style="display:flex;align-items:baseline;gap:5px">
+            <span style="font-size:20px;font-weight:500;color:var(--text-mid)" id="gddPriorTotal">--</span>
+            <span style="font-size:11px;color:var(--text-muted)">GDD</span>
+            <span style="font-size:11px;font-weight:600;margin-left:3px" id="gddDelta"></span>
           </div>
-          <div style="font-size:10px;color:var(--text-muted);margin-top:2px" id="gddPriorYear">2025</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:1px" id="gddPriorYear">2025</div>
         </div>
         <!-- Base selector -->
         <div class="gdd-bases">
@@ -338,51 +385,42 @@ button:hover{opacity:.85}
         </div>
       </div>
       <!-- Right: milestones -->
-      <div style="flex:1;min-width:200px">
-        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px">Phenology Milestones</div>
+      <div style="flex:1;min-width:180px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:7px">Phenology Milestones</div>
         <div class="gdd-milestones" id="gddMilestones"></div>
       </div>
     </div>
     <div class="gdd-reset-row">
       <label>Start date</label>
-      <input type="date" id="gddStartDate" style="width:130px" onchange="fetchGDD()">
+      <input type="date" id="gddStartDate" style="width:128px" onchange="fetchGDD()">
       <button class="btn-ghost" onclick="fetchGDD()" style="font-size:11px;padding:5px 10px">Recalculate</button>
-      <span style="font-size:11px;color:var(--text-muted)" id="gddDaysCount"></span>
-      <span style="font-size:11px;color:var(--text-muted);margin-left:4px" id="gddStatus"></span>
+      <span style="font-size:11px;color:var(--text-muted)" id="gddStatus"></span>
     </div>
   </div>
 
   <!-- IRRIGATION SCHEDULE -->
-  <div class="card span3" id="irrCard">
+  <div class="card" id="irrCard">
     <div class="card-header">
-      <span class="card-title">Irrigation Schedule — Hydrawise</span>
+      <span class="card-title">Irrigation — Hydrawise</span>
       <span class="badge badge-blue" id="irrBadge">Not connected</span>
     </div>
-    <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
-      <!-- Left: key entry -->
-      <div style="flex:0 0 auto;min-width:200px">
-        <div class="irr-key-row">
-          <label>API Key</label>
-          <input type="password" id="hwKey" placeholder="Hydrawise API key">
-        </div>
-        <div style="display:flex;gap:6px;margin-bottom:6px">
-          <button class="btn-blue" onclick="connectHydrawise()" style="font-size:11px;padding:5px 12px;flex:1">Connect</button>
-          <button onclick="clearHydrawiseKey()" style="font-size:10px;background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:7px;padding:5px 8px;cursor:pointer">Clear</button>
-        </div>
-        <div class="irr-controller" id="irrController">
-          <span class="irr-dot" id="irrDot"></span>
-          <span id="irrControllerName">Enter API key to connect</span>
-        </div>
-        <div style="font-size:10px;color:var(--text-muted);line-height:1.6">
-          Get key: Hydrawise app<br>→ Menu → Account Details<br>→ Generate API Key
-        </div>
-      </div>
-      <!-- Right: zone list -->
-      <div style="flex:1;min-width:260px">
-        <div class="irr-zones" id="irrZones">
-          <div style="font-size:12px;color:var(--text-muted);padding:8px 0">No zones loaded.</div>
-        </div>
-      </div>
+    <div class="irr-key-row">
+      <label>API Key</label>
+      <input type="password" id="hwKey" placeholder="Hydrawise API key">
+    </div>
+    <div style="display:flex;gap:5px;margin-bottom:6px">
+      <button class="btn-blue" onclick="connectHydrawise()" style="font-size:11px;padding:5px 10px;flex:1">Connect</button>
+      <button onclick="clearHydrawiseKey()" style="font-size:10px;background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:7px;padding:5px 8px;cursor:pointer">Clear</button>
+    </div>
+    <div class="irr-status" id="irrStatus">
+      <span class="irr-dot" id="irrDot"></span>
+      <span id="irrControllerName">Enter API key to connect</span>
+    </div>
+    <div style="font-size:10px;color:var(--text-muted);line-height:1.6;margin-bottom:4px">
+      Get key: Hydrawise app → Account → API Key
+    </div>
+    <div class="irr-zones" id="irrZones">
+      <div style="font-size:12px;color:var(--text-muted)">No zones loaded.</div>
     </div>
   </div>
 
@@ -702,68 +740,24 @@ function clearGH(){
 function deg2dir(d){return['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(d/22.5)%16]}
 
 async function connectStation(){
-  const api = document.getElementById('awApi').value.trim();
-  const app = document.getElementById('awApp').value.trim();
-  const st  = document.getElementById('stStatus');
+  const api=document.getElementById('awApi').value.trim(),app=document.getElementById('awApp').value.trim();
+  const st=document.getElementById('stStatus');
   if(!api||!app){st.textContent='⚠ Enter both keys first.';return;}
   st.textContent='Connecting…';
   try{
     const data=await(await fetch(`https://api.ambientweather.net/v1/devices?applicationKey=${app}&apiKey=${api}`)).json();
     if(!Array.isArray(data)||!data.length){st.textContent='⚠ No devices found.';return;}
-    // Save keys to localStorage so they persist across page loads
-    localStorage.setItem('kgAwApi', api);
-    localStorage.setItem('kgAwApp', app);
     applyStation(data[0].lastData);
     const ts=new Date(data[0].lastData.dateutc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-    st.textContent=`✓ Connected · last update ${ts} · keys saved`;
-    startStationRefresh(api, app);
+    st.textContent=`✓ Connected · last update ${ts}`;
+    clearInterval(window._stInt);
+    window._stInt=setInterval(async()=>{
+      try{
+        const d2=await(await fetch(`https://api.ambientweather.net/v1/devices?applicationKey=${app}&apiKey=${api}`)).json();
+        if(Array.isArray(d2)&&d2.length){applyStation(d2[0].lastData);const ts2=new Date(d2[0].lastData.dateutc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});st.textContent=`✓ Connected · last update ${ts2}`;}
+      }catch(e){st.textContent='⚠ Refresh error: '+e.message;}
+    },5*60*1000);
   }catch(e){st.textContent='⚠ Error: '+e.message;}
-}
-
-function startStationRefresh(api, app){
-  const st=document.getElementById('stStatus');
-  clearInterval(window._stInt);
-  window._stInt=setInterval(async()=>{
-    try{
-      const d2=await(await fetch(`https://api.ambientweather.net/v1/devices?applicationKey=${app}&apiKey=${api}`)).json();
-      if(Array.isArray(d2)&&d2.length){
-        applyStation(d2[0].lastData);
-        const ts2=new Date(d2[0].lastData.dateutc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-        st.textContent=`✓ Connected · last update ${ts2}`;
-      }
-    }catch(e){st.textContent='⚠ Refresh error: '+e.message;}
-  },5*60*1000);
-}
-
-// Auto-connect on page load using saved keys
-function autoConnectStation(){
-  const api = localStorage.getItem('kgAwApi');
-  const app = localStorage.getItem('kgAwApp');
-  if(!api||!app) return;
-  // Pre-fill the fields (as asterisks since type=password)
-  document.getElementById('awApi').value = api;
-  document.getElementById('awApp').value = app;
-  const st = document.getElementById('stStatus');
-  st.textContent = 'Auto-connecting with saved keys…';
-  fetch(`https://api.ambientweather.net/v1/devices?applicationKey=${app}&apiKey=${api}`)
-    .then(r=>r.json())
-    .then(data=>{
-      if(!Array.isArray(data)||!data.length){st.textContent='⚠ No devices found.';return;}
-      applyStation(data[0].lastData);
-      const ts=new Date(data[0].lastData.dateutc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-      st.textContent=`✓ Auto-connected · last update ${ts}`;
-      startStationRefresh(api, app);
-    })
-    .catch(e=>{st.textContent='⚠ Auto-connect failed: '+e.message;});
-}
-
-function clearStationKeys(){
-  localStorage.removeItem('kgAwApi');
-  localStorage.removeItem('kgAwApp');
-  document.getElementById('awApi').value='';
-  document.getElementById('awApp').value='';
-  document.getElementById('stStatus').textContent='Keys cleared. Enter new keys to reconnect.';
-  clearInterval(window._stInt);
 }
 
 function applyStation(d){setStation(d.tempf??null,d.humidity??null,d.windspeedmph??null,d.winddir!=null?deg2dir(d.winddir):null,d.dailyrainin??null)}
@@ -832,345 +826,365 @@ function addEvent(){
 
 function deleteEvent(i){calEvs[calSel].splice(i,1);renderCal();renderEvList()}
 
-// ── GROWING DEGREE DAYS ───────────────────────────
-// Data source: UK Ag Weather Center (weather.uky.edu)
-// Uses Kentucky Mesonet + NWS data for Fayette County.
-// This matches exactly what you see at weather.uky.edu/dd.php
+// ── MONTHLY TO-DO LIST ────────────────────────────
+// Storage key: todoData = { "2026-07": [{text, done}, ...], ... }
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+let todoYear = new Date().getFullYear();
+let todoMonth = new Date().getMonth(); // 0-indexed
+let todoData = {}; // loaded from localStorage
 
-let gddBase       = 50;
-let gddData       = [];   // this year: array of {date, maxT, minT, avgT, gdd, total}
-let gddPriorData  = [];   // prior year: same structure
+function todoKey(year, month) {
+  return year + '-' + String(month + 1).padStart(2, '0');
+}
+
+function loadTodoData() {
+  try { todoData = JSON.parse(localStorage.getItem('kgTodoData') || '{}'); } catch(e) { todoData = {}; }
+}
+
+function saveTodoData() {
+  localStorage.setItem('kgTodoData', JSON.stringify(todoData));
+}
+
+function renderTodoTabs() {
+  const tabs = document.getElementById('todoTabs');
+  tabs.innerHTML = MONTHS.map((name, i) => {
+    const key = todoKey(todoYear, i);
+    const hasItems = (todoData[key] || []).length > 0;
+    const active = i === todoMonth ? ' active' : '';
+    const dot = hasItems ? ' has-items' : '';
+    return `<div class="todo-tab${active}${dot}" onclick="selectTodoMonth(${i})">${name}</div>`;
+  }).join('');
+  document.getElementById('todoYearLbl').textContent = todoYear;
+}
+
+function renderTodoList() {
+  const key = todoKey(todoYear, todoMonth);
+  const items = todoData[key] || [];
+  const list = document.getElementById('todoList');
+  const badge = document.getElementById('todoBadge');
+  const remaining = items.filter(it => !it.done).length;
+  badge.textContent = remaining + ' remaining';
+
+  if (!items.length) {
+    list.innerHTML = '<div class="todo-empty">No tasks yet for ' + MONTHS[todoMonth] + ' ' + todoYear + '.</div>';
+  } else {
+    list.innerHTML = items.map((it, i) => `
+      <div class="todo-item">
+        <input type="checkbox" class="todo-cb" ${it.done ? 'checked' : ''} onchange="toggleTodoItem(${i})">
+        <span class="todo-text${it.done ? ' done' : ''}">${escHtml(it.text)}</span>
+        <span class="todo-del" onclick="deleteTodoItem(${i})" title="Remove">✕</span>
+      </div>`).join('');
+  }
+  renderTodoPrior();
+}
+
+function renderTodoPrior() {
+  const priorKey = todoKey(todoYear - 1, todoMonth);
+  const priorItems = (todoData[priorKey] || []).filter(it => it.text);
+  const el = document.getElementById('todoPrior');
+  if (!priorItems.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <div class="todo-prior-lbl">
+      <span>📋 ${MONTHS[todoMonth]} ${todoYear - 1} — last year's tasks</span>
+      <button onclick="copyPriorYear()" style="font-size:10px;background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:5px;padding:2px 8px;cursor:pointer">Copy all</button>
+    </div>
+    ${priorItems.map((it, i) => `
+      <div class="todo-prior-item" onclick="copyPriorItem(${i})" title="Click to copy to this month">
+        <span style="font-size:11px">＋</span>
+        <span style="text-decoration:${it.done ? 'line-through' : 'none'}">${escHtml(it.text)}</span>
+      </div>`).join('')}`;
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function selectTodoMonth(month) {
+  todoMonth = month;
+  renderTodoTabs();
+  renderTodoList();
+  document.getElementById('todoInput').focus();
+}
+
+function changeTodoYear(dir) {
+  todoYear += dir;
+  renderTodoTabs();
+  renderTodoList();
+}
+
+function addTodoItem() {
+  const inp = document.getElementById('todoInput');
+  const text = inp.value.trim();
+  if (!text) return;
+  const key = todoKey(todoYear, todoMonth);
+  if (!todoData[key]) todoData[key] = [];
+  todoData[key].push({ text, done: false });
+  saveTodoData();
+  inp.value = '';
+  renderTodoTabs();
+  renderTodoList();
+}
+
+function toggleTodoItem(i) {
+  const key = todoKey(todoYear, todoMonth);
+  if (!todoData[key]) return;
+  todoData[key][i].done = !todoData[key][i].done;
+  saveTodoData();
+  renderTodoTabs();
+  renderTodoList();
+}
+
+function deleteTodoItem(i) {
+  const key = todoKey(todoYear, todoMonth);
+  if (!todoData[key]) return;
+  todoData[key].splice(i, 1);
+  saveTodoData();
+  renderTodoTabs();
+  renderTodoList();
+}
+
+function copyPriorItem(i) {
+  const priorKey = todoKey(todoYear - 1, todoMonth);
+  const priorItems = todoData[priorKey] || [];
+  if (!priorItems[i]) return;
+  const key = todoKey(todoYear, todoMonth);
+  if (!todoData[key]) todoData[key] = [];
+  // Don't duplicate
+  if (todoData[key].find(it => it.text === priorItems[i].text)) return;
+  todoData[key].push({ text: priorItems[i].text, done: false });
+  saveTodoData();
+  renderTodoTabs();
+  renderTodoList();
+}
+
+function copyPriorYear() {
+  const priorKey = todoKey(todoYear - 1, todoMonth);
+  const priorItems = todoData[priorKey] || [];
+  if (!priorItems.length) return;
+  const key = todoKey(todoYear, todoMonth);
+  if (!todoData[key]) todoData[key] = [];
+  const existing = todoData[key].map(it => it.text);
+  priorItems.forEach(it => {
+    if (!existing.includes(it.text)) todoData[key].push({ text: it.text, done: false });
+  });
+  saveTodoData();
+  renderTodoTabs();
+  renderTodoList();
+}
+
+function initTodo() {
+  loadTodoData();
+  renderTodoTabs();
+  renderTodoList();
+}
+
+// ── GROWING DEGREE DAYS ───────────────────────────
+let gddBase = 50, gddData = [], gddPriorData = [];
 
 const GDD_MILESTONES = {
-  50: [
-    { gdd:   50, icon:'🌸', name:'Forsythia first bloom' },
-    { gdd:  100, icon:'🌸', name:'Forsythia peak bloom' },
-    { gdd:  200, icon:'🌷', name:'Tulip & daffodil peak' },
-    { gdd:  350, icon:'🍎', name:'Crabapple bloom' },
-    { gdd:  500, icon:'🌿', name:'Lilac full bloom' },
-    { gdd:  700, icon:'🌹', name:'Rose first flush' },
-    { gdd: 1000, icon:'🦟', name:'Japanese beetle emergence' },
-    { gdd: 1350, icon:'🌻', name:'Coneflower / rudbeckia bloom' },
+  50:[
+    {gdd:50,  icon:'🌸',name:'Forsythia first bloom'},
+    {gdd:100, icon:'🌸',name:'Forsythia peak bloom'},
+    {gdd:200, icon:'🌷',name:'Tulip & daffodil peak'},
+    {gdd:350, icon:'🍎',name:'Crabapple bloom'},
+    {gdd:500, icon:'🌿',name:'Lilac full bloom'},
+    {gdd:700, icon:'🌹',name:'Rose first flush'},
+    {gdd:1000,icon:'🦟',name:'Japanese beetle emergence'},
+    {gdd:1350,icon:'🌻',name:'Coneflower / rudbeckia bloom'},
   ],
-  40: [
-    { gdd:  150, icon:'🌱', name:'Cool-season seed germination' },
-    { gdd:  300, icon:'🥬', name:'Lettuce / spinach transplant' },
-    { gdd:  600, icon:'🌸', name:'Pansy peak color' },
-    { gdd:  900, icon:'🌿', name:'Perennial ground cover est.' },
-    { gdd: 1400, icon:'🌻', name:'Warm-season planting safe' },
-    { gdd: 2000, icon:'🍂', name:'Fall planting window opens' },
+  40:[
+    {gdd:150, icon:'🌱',name:'Cool-season seed germination'},
+    {gdd:300, icon:'🥬',name:'Lettuce / spinach transplant'},
+    {gdd:600, icon:'🌸',name:'Pansy peak color'},
+    {gdd:900, icon:'🌿',name:'Perennial ground cover est.'},
+    {gdd:1400,icon:'🌻',name:'Warm-season planting safe'},
+    {gdd:2000,icon:'🍂',name:'Fall planting window opens'},
   ],
-  32: [
-    { gdd:  200, icon:'🌱', name:'Soil workable — early seeding' },
-    { gdd:  500, icon:'🌸', name:'Early spring bloomers peak' },
-    { gdd: 1000, icon:'🌿', name:'Full canopy leaf-out' },
-    { gdd: 1800, icon:'🌻', name:'Mid-summer annuals peak' },
-    { gdd: 2800, icon:'🍂', name:'First fall color' },
-    { gdd: 3500, icon:'❄️', name:'Hardening off / dormancy' },
+  32:[
+    {gdd:200, icon:'🌱',name:'Soil workable — early seeding'},
+    {gdd:500, icon:'🌸',name:'Early spring bloomers peak'},
+    {gdd:1000,icon:'🌿',name:'Full canopy leaf-out'},
+    {gdd:1800,icon:'🌻',name:'Mid-summer annuals peak'},
+    {gdd:2800,icon:'🍂',name:'First fall color'},
+    {gdd:3500,icon:'❄️',name:'Hardening off / dormancy'},
   ]
 };
+const GDD_MAX = {50:2500,40:3500,32:5000};
 
-const GDD_SEASON_MAX = { 50: 2500, 40: 3500, 32: 5000 };
-
-function setGDDBase(base) {
-  gddBase = base;
-  [50, 40, 32].forEach(b =>
-    document.getElementById('gddBtn' + b).classList.toggle('active', b === base)
-  );
+function setGDDBase(base){
+  gddBase=base;
+  [50,40,32].forEach(b=>document.getElementById('gddBtn'+b).classList.toggle('active',b===base));
   renderGDD();
 }
 
-// Build Open-Meteo historical archive URL
-// Free, no API key, full CORS — returns daily tmax/tmin from ERA5 reanalysis
-function openMeteoUrl(startDate, endDate) {
-  return 'https://archive-api.open-meteo.com/v1/archive'
-    + '?latitude=38.0406&longitude=-84.5037'
-    + '&start_date=' + startDate
-    + '&end_date='   + endDate
-    + '&daily=temperature_2m_max,temperature_2m_min'
-    + '&temperature_unit=fahrenheit'
-    + '&timezone=America%2FNew_York';
-}
-
-// Fetch Open-Meteo archive and calculate GDD series for a given base temp
-async function fetchOpenMeteoGDD(startDate, endDate, base) {
-  const url = openMeteoUrl(startDate, endDate);
-  const res  = await fetch(url);
-  const data = await res.json();
-
-  const dates = data.daily?.time            || [];
-  const maxT  = data.daily?.temperature_2m_max || [];
-  const minT  = data.daily?.temperature_2m_min || [];
-
-  const rows = [];
-  let total = 0;
-  for (let i = 0; i < dates.length; i++) {
-    if (maxT[i] == null || minT[i] == null) continue;
-    const avg = (maxT[i] + minT[i]) / 2;
-    const gdd = Math.max(0, avg - base);
-    total += gdd;
-    rows.push({ date: dates[i], maxT: Math.round(maxT[i]), minT: Math.round(minT[i]), gdd: Math.round(gdd * 10) / 10, total: Math.round(total) });
+async function fetchOpenMeteoGDD(start,end,base){
+  const url='https://archive-api.open-meteo.com/v1/archive?latitude=38.0406&longitude=-84.5037'
+    +'&start_date='+start+'&end_date='+end
+    +'&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=America%2FNew_York';
+  const data=await(await fetch(url)).json();
+  const dates=data.daily?.time||[],maxT=data.daily?.temperature_2m_max||[],minT=data.daily?.temperature_2m_min||[];
+  const rows=[];let total=0;
+  for(let i=0;i<dates.length;i++){
+    if(maxT[i]==null||minT[i]==null)continue;
+    const avg=(maxT[i]+minT[i])/2,gdd=Math.max(0,avg-base);
+    total+=gdd;
+    rows.push({date:dates[i],gdd:Math.round(gdd*10)/10,total:Math.round(total)});
   }
   return rows;
 }
 
-async function fetchGDD() {
-  const badge    = document.getElementById('gddBadge');
-  const statusEl = document.getElementById('gddStatus');
-  badge.textContent      = 'Loading…';
-  badge.style.background = '';
-  badge.style.color      = '';
-
-  const startInput = document.getElementById('gddStartDate');
-  const curYear    = new Date().getFullYear();
-  if (!startInput.value) startInput.value = curYear + '-01-01';
-
-  const startDate  = startInput.value;                         // YYYY-MM-DD
-  const today      = new Date();
-  // Open-Meteo archive lags ~2 days behind, use yesterday as safe end date
-  const yesterday  = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const endDate    = yesterday.toISOString().slice(0, 10);
-
-  const sYear      = parseInt(startDate.slice(0, 4));
-  const priorYear  = sYear - 1;
-  const priorStart = priorYear + startDate.slice(4);
-  const priorEnd   = priorYear + endDate.slice(4);            // same month/day, prior year
-
-  document.getElementById('gddDaysCount').textContent = '';
-  statusEl.textContent = 'Fetching from Open-Meteo…';
-
-  try {
-    const [thisRows, priorRows] = await Promise.all([
-      fetchOpenMeteoGDD(startDate, endDate,   gddBase),
-      fetchOpenMeteoGDD(priorStart, priorEnd, gddBase)
+async function fetchGDD(){
+  const badge=document.getElementById('gddBadge'),statusEl=document.getElementById('gddStatus');
+  badge.textContent='Loading…';badge.style.background='';badge.style.color='';
+  const inp=document.getElementById('gddStartDate');
+  if(!inp.value)inp.value=new Date().getFullYear()+'-01-01';
+  const start=inp.value;
+  const yest=new Date();yest.setDate(yest.getDate()-1);
+  const end=yest.toISOString().slice(0,10);
+  const sYear=parseInt(start.slice(0,4)),priorYear=sYear-1;
+  const priorStart=priorYear+start.slice(4),priorEnd=priorYear+end.slice(4);
+  statusEl.textContent='Fetching from Open-Meteo…';
+  try{
+    const[thisRows,priorRows]=await Promise.all([
+      fetchOpenMeteoGDD(start,end,gddBase),
+      fetchOpenMeteoGDD(priorStart,priorEnd,gddBase)
     ]);
-
-    gddData      = thisRows;
-    gddPriorData = priorRows;
-
-    if (!gddData.length) {
-      badge.textContent    = 'No data';
-      statusEl.textContent = 'No data returned — try a different date range.';
-      return;
-    }
-
-    badge.textContent      = '● Live';
-    badge.style.background = 'var(--green-pale)';
-    badge.style.color      = 'var(--green)';
-    statusEl.textContent   = gddData.length + ' days · Lexington KY · Open-Meteo ERA5';
-
-    document.getElementById('gddYearLabel').textContent = sYear;
-    document.getElementById('gddPriorYear').textContent = priorYear + ' (same date)';
-    document.getElementById('gddDaysCount').textContent = gddData.length + ' days';
-
+    gddData=thisRows;gddPriorData=priorRows;
+    if(!gddData.length){badge.textContent='No data';statusEl.textContent='No data returned.';return;}
+    badge.textContent='● Live';badge.style.background='var(--green-pale)';badge.style.color='var(--green)';
+    statusEl.textContent=gddData.length+' days · Open-Meteo ERA5';
+    document.getElementById('gddYearLabel').textContent=sYear;
+    document.getElementById('gddPriorYear').textContent=priorYear+' (same date)';
     renderGDD();
-
-  } catch(err) {
-    badge.textContent    = 'Error';
-    statusEl.textContent = 'Could not load: ' + err.message;
-  }
+  }catch(err){badge.textContent='Error';statusEl.textContent='Could not load: '+err.message;}
 }
 
-function renderGDD() {
-  if (!gddData.length) return;
-
-  const thisTotal  = gddData[gddData.length - 1].total;
-  const priorTotal = gddPriorData.length
-    ? gddPriorData[gddPriorData.length - 1].total
-    : null;
-
-  const maxGDD = GDD_SEASON_MAX[gddBase];
-  const pct    = Math.min(100, Math.round(thisTotal / maxGDD * 100));
-
-  document.getElementById('gddTotal').textContent   = thisTotal.toLocaleString();
-  document.getElementById('gddBar').style.width     = pct + '%';
-  document.getElementById('gddPct').textContent     = pct + '%';
-
-  const startVal = document.getElementById('gddStartDate').value;
-  if (startVal) {
-    const d = new Date(startVal + 'T12:00:00');
-    document.getElementById('gddSince').textContent =
-      'since ' + d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
-  }
-
-  // Prior year comparison
-  const priorEl = document.getElementById('gddPriorTotal');
-  const deltaEl = document.getElementById('gddDelta');
-  if (priorTotal != null) {
-    priorEl.textContent = priorTotal.toLocaleString();
-    const diff = thisTotal - priorTotal;
-    deltaEl.textContent = (diff >= 0 ? '+' : '') + diff;
-    deltaEl.style.color = diff > 0
-      ? 'var(--green)'
-      : diff < 0 ? 'var(--red)' : 'var(--text-muted)';
-  } else {
-    priorEl.textContent = '--';
-    deltaEl.textContent = '';
-  }
-
-  // Phenology milestones
-  const milestones = GDD_MILESTONES[gddBase] || [];
-  const el = document.getElementById('gddMilestones');
-  el.innerHTML = milestones.map(m => {
-    const reached    = thisTotal >= m.gdd;
-    const remaining  = m.gdd - thisTotal;
-    const priorReach = priorTotal != null && priorTotal >= m.gdd;
-    return `<div class="gdd-milestone${reached ? ' gdd-ms-reached' : ''}">
-      <span class="gdd-ms-dot${reached ? '' : ' gdd-ms-dot-pending'}"></span>
-      <span style="font-size:14px;line-height:1">${m.icon}</span>
+function renderGDD(){
+  if(!gddData.length)return;
+  const thisTotal=gddData[gddData.length-1].total;
+  const priorTotal=gddPriorData.length?gddPriorData[gddPriorData.length-1].total:null;
+  const pct=Math.min(100,Math.round(thisTotal/GDD_MAX[gddBase]*100));
+  document.getElementById('gddTotal').textContent=thisTotal.toLocaleString();
+  document.getElementById('gddBar').style.width=pct+'%';
+  document.getElementById('gddPct').textContent=pct+'%';
+  const sv=document.getElementById('gddStartDate').value;
+  if(sv){const d=new Date(sv+'T12:00:00');document.getElementById('gddSince').textContent='since '+d.toLocaleDateString('en-US',{month:'short',day:'numeric'});}
+  const priorEl=document.getElementById('gddPriorTotal'),deltaEl=document.getElementById('gddDelta');
+  if(priorTotal!=null){
+    priorEl.textContent=priorTotal.toLocaleString();
+    const diff=thisTotal-priorTotal;
+    deltaEl.textContent=(diff>=0?'+':'')+diff;
+    deltaEl.style.color=diff>0?'var(--green)':diff<0?'var(--red)':'var(--text-muted)';
+  }else{priorEl.textContent='--';deltaEl.textContent='';}
+  const milestones=GDD_MILESTONES[gddBase]||[];
+  document.getElementById('gddMilestones').innerHTML=milestones.map(m=>{
+    const reached=thisTotal>=m.gdd,rem=m.gdd-thisTotal;
+    const priorReach=priorTotal!=null&&priorTotal>=m.gdd;
+    return`<div class="gdd-milestone${reached?' gdd-ms-reached':''}">
+      <span class="gdd-ms-dot"></span>
+      <span style="font-size:13px;line-height:1">${m.icon}</span>
       <span class="gdd-ms-name">${m.name}</span>
-      <span class="gdd-ms-val">${reached ? '✓ ' + m.gdd : remaining + ' to go'}</span>
-      ${priorTotal != null ? `<span style="font-size:10px;color:var(--text-muted);margin-left:2px">${priorReach ? '(✓ last yr)' : ''}</span>` : ''}
+      <span class="gdd-ms-val">${reached?'✓ '+m.gdd:rem+' to go'}${priorTotal!=null&&priorReach?' (✓ last yr)':''}</span>
     </div>`;
   }).join('');
 }
 
-const GDD_MILESTONES = {
-  50: [
-    { gdd:  100, icon:'🌸', name:'Forsythia peak bloom' },
-    { gdd:  200, icon:'🌷', name:'Tulip & daffodil peak' },
-    { gdd:  350, icon:'🍎', name:'Crabapple bloom' },
-    { gdd:  500, icon:'🌿', name:'Lilac full bloom' },
-    { gdd:  700, icon:'🌹', name:'Rose first flush' },
-    { gdd: 1000, icon:'🦟', name:'Japanese beetle emergence' },
-    { gdd: 1350, icon:'🌻', name:'Coneflower / rudbeckia bloom' },
-  ],
-  40: [
-    { gdd:  150, icon:'🌱', name:'Cool-season seed germination' },
-    { gdd:  300, icon:'🥬', name:'Lettuce / spinach transplant' },
-    { gdd:  600, icon:'🌸', name:'Pansy peak color' },
-    { gdd:  900, icon:'🌿', name:'Perennial ground cover est.' },
 // ── HYDRAWISE IRRIGATION ──────────────────────────
-// API docs: https://www.hunterirrigation.com/sites/default/files/2024-03/Hydrawise%20REST%20API.pdf
-// Key endpoints (GET, api_key in URL param):
-//   customerdetails.php  — controller name + last contact
-//   statusschedule.php   — all zones with next run time + duration
+const HW_BASE='https://api.hydrawise.com/api/v1';
 
-const HW_BASE = 'https://api.hydrawise.com/api/v1';
+function fmtSec(s){
+  if(!s||isNaN(s))return'—';
+  const m=Math.floor(s/60),sec=s%60;
+  return m>0?m+'m'+(sec>0?' '+sec+'s':''):sec+'s';
+}
 
-async function connectHydrawise() {
-  const key = document.getElementById('hwKey').value.trim();
-  if (!key) { document.getElementById('irrControllerName').textContent = 'Enter an API key first.'; return; }
-  document.getElementById('irrBadge').textContent = 'Connecting…';
-  try {
-    // Fetch controller info and zone schedule in parallel
-    const [custRes, schedRes] = await Promise.all([
+async function connectHydrawise(){
+  const key=document.getElementById('hwKey').value.trim();
+  const badge=document.getElementById('irrBadge'),nameEl=document.getElementById('irrControllerName');
+  if(!key){nameEl.textContent='Enter an API key first.';return;}
+  badge.textContent='Connecting…';
+  try{
+    const[custRes,schedRes]=await Promise.all([
       fetch(`${HW_BASE}/customerdetails.php?api_key=${key}`),
       fetch(`${HW_BASE}/statusschedule.php?api_key=${key}`)
     ]);
-    if (!custRes.ok || !schedRes.ok) throw new Error(`HTTP ${custRes.status}`);
-    const cust  = await custRes.json();
-    const sched = await schedRes.json();
-
-    if (cust.error || sched.error) throw new Error(cust.error || sched.error);
-
-    // Save key
-    localStorage.setItem('kgHwKey', key);
-
-    renderHydrawise(cust, sched);
+    if(!custRes.ok||!schedRes.ok)throw new Error('HTTP '+custRes.status);
+    const cust=await custRes.json(),sched=await schedRes.json();
+    if(cust.error||sched.error)throw new Error(cust.error||sched.error);
+    localStorage.setItem('kgHwKey',key);
+    renderHydrawise(cust,sched);
     startHydrawiseRefresh(key);
-
-  } catch(e) {
-    document.getElementById('irrBadge').textContent = 'Error';
-    document.getElementById('irrControllerName').textContent = 'Failed: ' + e.message;
-    // CORS failure gives a generic TypeError — give a helpful message
-    if (e.message.includes('Failed to fetch') || e.message.includes('NetworkError') || e.name === 'TypeError') {
-      document.getElementById('irrControllerName').textContent = 'CORS blocked — use the GitHub Pages URL, not a local file.';
-    }
+  }catch(e){
+    badge.textContent='Error';
+    nameEl.textContent=(e.message.includes('Failed to fetch')||e.name==='TypeError')
+      ?'CORS blocked — use the GitHub Pages URL, not a local file.'
+      :'Failed: '+e.message;
   }
 }
 
-function renderHydrawise(cust, sched) {
-  const badge      = document.getElementById('irrBadge');
-  const dot        = document.getElementById('irrDot');
-  const nameEl     = document.getElementById('irrControllerName');
-  const zonesEl    = document.getElementById('irrZones');
-
-  // Controller status
-  const ctrl = cust.controllers?.[0];
-  const lastContact = ctrl?.last_contact
-    ? new Date(ctrl.last_contact * 1000).toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })
-    : '—';
-  const isOnline = ctrl?.last_contact && (Date.now()/1000 - ctrl.last_contact) < 300; // online if contacted <5 min ago
-
-  badge.textContent      = '● Live';
-  badge.style.background = 'var(--green-pale)';
-  badge.style.color      = 'var(--green)';
-  dot.className          = 'irr-dot' + (isOnline ? ' online' : '');
-  nameEl.textContent     = (ctrl?.name || cust.current_controller || 'Controller') + ' · last contact ' + lastContact;
-
-  // Zones
-  const relays = sched.relays || [];
-  if (!relays.length) {
-    zonesEl.innerHTML = '<div style="font-size:12px;color:var(--text-muted)">No zones found on this controller.</div>';
-    return;
-  }
-
-  zonesEl.innerHTML = relays.map(z => {
-    const isRunning = z.time === 1;
-    const nextText  = isRunning
-      ? '💧 Running — ' + fmtSeconds(parseInt(z.run)) + ' left'
-      : z.timestr
-        ? 'Next: ' + z.timestr
-        : 'Scheduled';
-    const runDur = isRunning ? '' : ' · ' + fmtSeconds(parseInt(z.run));
-
-    return `<div class="irr-zone${isRunning ? ' active' : ''}">
+function renderHydrawise(cust,sched){
+  const badge=document.getElementById('irrBadge'),dot=document.getElementById('irrDot');
+  const nameEl=document.getElementById('irrControllerName'),zonesEl=document.getElementById('irrZones');
+  const ctrl=cust.controllers?.[0];
+  const lastContact=ctrl?.last_contact
+    ?new Date(ctrl.last_contact*1000).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}):'—';
+  const isOnline=ctrl?.last_contact&&(Date.now()/1000-ctrl.last_contact)<300;
+  badge.textContent='● Live';badge.style.background='var(--green-pale)';badge.style.color='var(--green)';
+  dot.className='irr-dot'+(isOnline?' online':'');
+  nameEl.textContent=(ctrl?.name||cust.current_controller||'Controller')+' · '+lastContact;
+  const relays=sched.relays||[];
+  if(!relays.length){zonesEl.innerHTML='<div style="font-size:12px;color:var(--text-muted)">No zones found.</div>';return;}
+  zonesEl.innerHTML=relays.map(z=>{
+    const running=z.time===1;
+    const nextText=running?'💧 Running — '+fmtSec(parseInt(z.run))+' left':(z.timestr?'Next: '+z.timestr:'Scheduled');
+    const dur=running?'':' · '+fmtSec(parseInt(z.run));
+    return`<div class="irr-zone${running?' active':''}">
       <div class="irr-zone-num">${z.relay}</div>
       <div class="irr-zone-name">${z.name}</div>
-      <div class="irr-zone-next${isRunning ? ' running' : ''}">${nextText}${runDur}</div>
+      <div class="irr-zone-next${running?' running':''}">${nextText}${dur}</div>
     </div>`;
   }).join('');
 }
 
-function fmtSeconds(s) {
-  if (!s || isNaN(s)) return '—';
-  const m = Math.floor(s / 60), sec = s % 60;
-  return m > 0 ? m + 'm' + (sec > 0 ? ' ' + sec + 's' : '') : sec + 's';
-}
-
-function startHydrawiseRefresh(key) {
+function startHydrawiseRefresh(key){
   clearInterval(window._hwInt);
-  window._hwInt = setInterval(async () => {
-    try {
-      const [custRes, schedRes] = await Promise.all([
+  window._hwInt=setInterval(async()=>{
+    try{
+      const[c,s]=await Promise.all([
         fetch(`${HW_BASE}/customerdetails.php?api_key=${key}`),
         fetch(`${HW_BASE}/statusschedule.php?api_key=${key}`)
       ]);
-      const cust  = await custRes.json();
-      const sched = await schedRes.json();
-      renderHydrawise(cust, sched);
-    } catch(e) { /* silent refresh failure */ }
-  }, 5 * 60 * 1000); // refresh every 5 min (respects nextpoll guidance)
+      renderHydrawise(await c.json(),await s.json());
+    }catch(e){}
+  },5*60*1000);
 }
 
-function autoConnectHydrawise() {
-  const key = localStorage.getItem('kgHwKey');
-  if (!key) return;
-  document.getElementById('hwKey').value = key;
+function autoConnectHydrawise(){
+  const key=localStorage.getItem('kgHwKey');
+  if(!key)return;
+  document.getElementById('hwKey').value=key;
   connectHydrawise();
 }
 
-function clearHydrawiseKey() {
+function clearHydrawiseKey(){
   localStorage.removeItem('kgHwKey');
-  document.getElementById('hwKey').value = '';
-  document.getElementById('irrBadge').textContent = 'Not connected';
-  document.getElementById('irrBadge').style.background = '';
-  document.getElementById('irrBadge').style.color = '';
-  document.getElementById('irrControllerName').textContent = 'Enter API key to connect';
-  document.getElementById('irrDot').className = 'irr-dot';
-  document.getElementById('irrZones').innerHTML = '<div style="font-size:12px;color:var(--text-muted)">No zones loaded.</div>';
+  document.getElementById('hwKey').value='';
+  document.getElementById('irrBadge').textContent='Not connected';
+  document.getElementById('irrBadge').style.background='';
+  document.getElementById('irrBadge').style.color='';
+  document.getElementById('irrControllerName').textContent='Enter API key to connect';
+  document.getElementById('irrDot').className='irr-dot';
+  document.getElementById('irrZones').innerHTML='<div style="font-size:12px;color:var(--text-muted)">No zones loaded.</div>';
   clearInterval(window._hwInt);
 }
 
 // ── INIT ──────────────────────────────────────────
 fetchNWS();
 fetchGDD();
-autoConnectStation();
 autoConnectHydrawise();
 renderCal();
 selectDay(fmtKey(new Date()));
+initTodo();
 setInterval(fetchNWS,15*60*1000);
 setInterval(fetchGDD,60*60*1000);
 </script>
