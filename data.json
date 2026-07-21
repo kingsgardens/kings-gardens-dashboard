@@ -22,6 +22,11 @@
         "name": "Willoway",
         "time": "10a",
         "type": "delivery"
+      },
+      {
+        "name": "Natorps",
+        "time": "12p",
+        "type": "delivery"
       }
     ]
   },
