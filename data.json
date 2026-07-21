@@ -1,0 +1,29 @@
+{
+  "calEvs": {
+    "2026-07-21": [
+      {
+        "name": "Add easy summer color with hydrangeas",
+        "time": "9a",
+        "type": "vendor"
+      }
+    ]
+  },
+  "todoData": {
+    "2026-07": [
+      {
+        "text": "Clean out back tool can.",
+        "done": false
+      },
+      {
+        "text": "Clean out under deck.",
+        "done": false
+      }
+    ],
+    "2025-08": [
+      {
+        "text": "Get ready for mums!",
+        "done": false
+      }
+    ]
+  }
+}
