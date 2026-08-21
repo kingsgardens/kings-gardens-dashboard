@@ -239,6 +239,18 @@ button:hover{opacity:.85}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
 
+/* REQUEST LIST */
+.req-list{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;max-height:260px;overflow-y:auto}
+.req-item{background:var(--surface);border-radius:8px;padding:8px 10px;font-size:12px;position:relative}
+.req-item:hover .req-del{opacity:1}
+.req-item-name{font-weight:600;color:var(--text);margin-bottom:2px}
+.req-item-meta{color:var(--text-muted);font-size:11px;line-height:1.5}
+.req-del{position:absolute;top:7px;right:8px;cursor:pointer;color:var(--text-muted);font-size:12px;opacity:0;transition:opacity .15s}
+.req-del:hover{color:var(--red)}
+.req-type-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;flex-shrink:0}
+.req-dot-general{background:var(--green-mid)}
+.req-dot-customer{background:var(--amber)}
+
 /* CALENDAR SUMMARY */
 .sum-cat{background:var(--surface);border-radius:10px;padding:10px 12px}
 .sum-cat-hdr{display:flex;align-items:center;gap:7px;margin-bottom:8px}
@@ -354,6 +366,36 @@ button:hover{opacity:.85}
     </div>
     <!-- Prior year reference -->
     <div class="todo-prior" id="todoPrior"></div>
+  </div>
+
+  <!-- REQUEST LIST -->
+  <div class="card" id="reqCard">
+    <div class="card-header">
+      <span class="card-title">Request List</span>
+      <span class="badge badge-blue" id="reqBadge">0 requests</span>
+    </div>
+    <p style="font-size:11px;color:var(--text-muted);line-height:1.6;margin-bottom:10px">
+      <strong>General request:</strong> enter plant name only.<br>
+      <strong>Customer request:</strong> enter their name, phone number, plant, and quantity.
+    </p>
+    <div class="req-list" id="reqList"></div>
+    <div style="display:flex;flex-direction:column;gap:5px;border-top:1px solid var(--border);padding-top:10px">
+      <div style="display:flex;gap:5px">
+        <select id="reqType" onchange="toggleReqFields()" style="font-size:12px;padding:5px 8px;width:130px;flex-shrink:0">
+          <option value="general">🌿 General</option>
+          <option value="customer">👤 Customer</option>
+        </select>
+        <input id="reqPlant" placeholder="Plant / request" style="flex:1;font-size:12px;padding:5px 8px">
+      </div>
+      <div id="reqCustomerFields" style="display:none;flex-direction:column;gap:5px">
+        <div style="display:flex;gap:5px">
+          <input id="reqName" placeholder="Customer name" style="flex:1;font-size:12px;padding:5px 8px">
+          <input id="reqPhone" placeholder="Phone number" style="flex:1;font-size:12px;padding:5px 8px">
+        </div>
+        <input id="reqQty" placeholder="Quantity" style="font-size:12px;padding:5px 8px;width:100px">
+      </div>
+      <button class="btn-green" onclick="addReqItem()" style="white-space:nowrap;align-self:flex-end">+ Add</button>
+    </div>
   </div>
 
   <!-- COMMENT SLOT: observation log card injected here when alert fires -->
@@ -602,8 +644,9 @@ async function fetchNWS(){
       ghReasons.push(`💨 Wind gusts up to ${mph} mph (${gustyHourMph.name})`);
     }
 
+    const coldOnly = !!coldHour;
     if (ghReasons.length > 0) {
-      showGH(ghReasons);
+      showGH(ghReasons, coldOnly);
     } else {
       clearGH();
     }
@@ -735,12 +778,15 @@ function demoGH(){
     '🌡️ Temp dropping to 42°F (Tonight)',
     '⛈️ Severe Thunderstorm Watch in effect',
     '💨 Wind gusts up to 52 mph (This Evening)'
-  ]);
+  ], false);
 }
 function demoClear(){ clearAlert(); clearGH(); }
 
 // ── GREENHOUSE WARNING CARD ────────────────────────
-function showGH(reasons){
+function showGH(reasons, coldOnly){
+  const note = coldOnly
+    ? 'Close entire greenhouse. Verify heating systems are on. Check back on this dashboard for updates.'
+    : 'Roll down all 3 sides. Close garage doors if forecast is severe. Check back on this dashboard for updates.';
   document.getElementById('ghSlot').innerHTML=`
     <div class="gh-card">
       <div class="gh-top">
@@ -757,7 +803,7 @@ function showGH(reasons){
         <div class="gh-reasons">
           ${reasons.map(r=>`<span class="gh-reason">${r}</span>`).join('')}
         </div>
-        <div class="gh-note">Close and latch all vents, doors, and roll-up sides before end of day. Verify heating systems are operational. Check back on this dashboard for updates.</div>
+        <div class="gh-note">${note}</div>
       </div>
     </div>`;
 }
@@ -1260,6 +1306,81 @@ function clearHydrawiseKey(){
 }
 
 
+
+// ── REQUEST LIST ──────────────────────────────────
+let reqItems = [];
+
+function toggleReqFields(){
+  const type = document.getElementById('reqType').value;
+  document.getElementById('reqCustomerFields').style.display = type === 'customer' ? 'flex' : 'none';
+}
+
+function addReqItem(){
+  const type  = document.getElementById('reqType').value;
+  const plant = document.getElementById('reqPlant').value.trim();
+  if(!plant) { document.getElementById('reqPlant').focus(); return; }
+
+  const item = { type, plant, ts: new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'}) };
+
+  if(type === 'customer'){
+    item.name  = document.getElementById('reqName').value.trim();
+    item.phone = document.getElementById('reqPhone').value.trim();
+    item.qty   = document.getElementById('reqQty').value.trim();
+  }
+
+  reqItems.push(item);
+  saveReqData();
+
+  // Clear fields
+  document.getElementById('reqPlant').value = '';
+  document.getElementById('reqName').value  = '';
+  document.getElementById('reqPhone').value = '';
+  document.getElementById('reqQty').value   = '';
+
+  renderReqList();
+}
+
+function deleteReqItem(i){
+  reqItems.splice(i, 1);
+  saveReqData();
+  renderReqList();
+}
+
+function renderReqList(){
+  const el    = document.getElementById('reqList');
+  const badge = document.getElementById('reqBadge');
+  if(!el) return;
+  badge.textContent = reqItems.length + ' request' + (reqItems.length === 1 ? '' : 's');
+  if(!reqItems.length){
+    el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:4px 0">No requests yet.</div>';
+    return;
+  }
+  el.innerHTML = reqItems.map((it, i) => {
+    const isCustomer = it.type === 'customer';
+    const meta = isCustomer
+      ? [it.name, it.phone, it.qty ? 'Qty: '+it.qty : ''].filter(Boolean).join(' · ')
+      : '';
+    return `<div class="req-item">
+      <div class="req-item-name">
+        <span class="req-type-dot ${isCustomer ? 'req-dot-customer' : 'req-dot-general'}"></span>
+        ${escHtml(it.plant)}
+      </div>
+      ${meta ? `<div class="req-item-meta">${escHtml(meta)}</div>` : ''}
+      <div class="req-item-meta" style="margin-top:2px">${it.ts}</div>
+      <span class="req-del" onclick="deleteReqItem(${i})" title="Remove">✕</span>
+    </div>`;
+  }).join('');
+}
+
+function saveReqData(){
+  localStorage.setItem('kgReqData', JSON.stringify(reqItems));
+  scheduleSave();
+}
+
+function loadReqData(){
+  try { reqItems = JSON.parse(localStorage.getItem('kgReqData') || '[]'); } catch(e) { reqItems = []; }
+}
+
 // ── GITHUB DATA SYNC ──────────────────────────────
 const SYNC_REPO = 'kingsgardens/kings-gardens-dashboard';
 const SYNC_FILE = 'data.json';
@@ -1311,12 +1432,14 @@ async function loadFromGitHub(){
     if(data.calEvs) calEvs = data.calEvs;
     // Apply todo data
     if(data.todoData) todoData = data.todoData;
+    if(data.reqItems) reqItems = data.reqItems;
     // Re-render everything
     renderCal();
     if(calSel) renderEvList();
     renderCalSummary();
     renderTodoTabs();
     renderTodoList();
+    renderReqList();
     const ts = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
     syncStatus('✓ Synced · last loaded '+ts, 'var(--green)');
   }catch(e){
@@ -1328,7 +1451,7 @@ async function saveToGitHub(){
   if(!syncPAT) return;
   syncStatus('Saving…');
   try{
-    const payload = { calEvs, todoData };
+    const payload = { calEvs, todoData, reqItems };
     const content = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
     const body = { message:'Dashboard data update', content };
     if(syncSHA) body.sha = syncSHA;
@@ -1373,6 +1496,8 @@ fetchGDD();
 autoConnectHydrawise();
 renderCal();
 selectDay(fmtKey(new Date()));
+loadReqData();
+renderReqList();
 initTodo();
 renderCalSummary();
 autoConnectSync();
