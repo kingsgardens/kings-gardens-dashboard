@@ -81,13 +81,7 @@
         "type": "delivery"
       }
     ],
-    "2026-08-25": [
-      {
-        "name": "Monrovia",
-        "time": "8:30am-noon",
-        "type": "delivery"
-      }
-    ]
+    "2026-08-25": []
   },
   "todoData": {
     "2026-07": [
