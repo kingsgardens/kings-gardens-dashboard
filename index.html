@@ -214,21 +214,6 @@ button:hover{opacity:.85}
 .gdd-reset-row{display:flex;gap:6px;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);flex-wrap:wrap}
 .gdd-reset-row label{font-size:11px;color:var(--text-muted);white-space:nowrap}
 
-/* IRRIGATION CARD */
-.irr-key-row{display:flex;gap:6px;align-items:center;margin-bottom:6px}
-.irr-key-row label{font-size:11px;color:var(--text-muted);white-space:nowrap;flex-shrink:0}
-.irr-key-row input{flex:1;font-size:12px;padding:5px 8px}
-.irr-zones{display:flex;flex-direction:column;gap:5px;margin-top:8px}
-.irr-zone{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:8px;background:var(--surface);font-size:12px}
-.irr-zone.active{background:#e8f4e8;border:1px solid var(--green-mid)}
-.irr-zone-num{width:22px;height:22px;border-radius:50%;background:var(--border);color:var(--text-muted);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.irr-zone.active .irr-zone-num{background:var(--green-mid);color:#fff}
-.irr-zone-name{flex:1;font-weight:500;color:var(--text)}
-.irr-zone-next{font-size:11px;color:var(--text-muted);text-align:right}
-.irr-zone-next.running{color:var(--green);font-weight:600}
-.irr-dot{width:7px;height:7px;border-radius:50%;background:var(--border);flex-shrink:0;display:inline-block;margin-right:4px}
-.irr-dot.online{background:var(--green-mid)}
-.irr-status{font-size:11px;color:var(--text-muted);margin-top:5px;min-height:14px;display:flex;align-items:center}
 
 /* FOOTER */
 .footer{text-align:center;font-size:11px;color:var(--text-muted);padding:8px 0 20px}
@@ -250,6 +235,24 @@ button:hover{opacity:.85}
 .req-type-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;flex-shrink:0}
 .req-dot-general{background:var(--green-mid)}
 .req-dot-customer{background:var(--amber)}
+
+/* SEASONAL NOTES */
+.season-tabs{display:flex;gap:4px;margin-bottom:12px}
+.season-tab{flex:1;text-align:center;padding:7px 0;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;border-radius:8px;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text-muted);transition:all .15s}
+.season-tab.spring.active{border-color:#52b788;background:#d8f3dc;color:#2d6a4f}
+.season-tab.summer.active{border-color:#e9c46a;background:#fff8e1;color:#856404}
+.season-tab.fall.active{border-color:#e76f51;background:#fde8e0;color:#9d3b1a}
+.season-tab.christmas.active{border-color:#c0392b;background:#fce8ea;color:#7b1a14}
+.season-tab:hover:not(.active){background:var(--green-pale);color:var(--green)}
+.season-note-list{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;margin-bottom:10px}
+.season-note{background:var(--surface);border-radius:8px;padding:8px 11px;font-size:13px;line-height:1.5;position:relative}
+.season-note:hover .season-note-del{opacity:1}
+.season-note-meta{font-size:10px;color:var(--text-muted);margin-bottom:3px;font-weight:600}
+.season-note-body{color:var(--text)}
+.season-note-del{position:absolute;top:7px;right:8px;cursor:pointer;color:var(--text-muted);font-size:12px;opacity:0;transition:opacity .15s}
+.season-note-del:hover{color:var(--red)}
+.season-input-row{display:flex;gap:6px;align-items:flex-end}
+.season-input-row textarea{flex:1;min-height:52px;resize:none;font-size:13px}
 
 /* CALENDAR SUMMARY */
 .sum-cat{background:var(--surface);border-radius:10px;padding:10px 12px}
@@ -452,19 +455,7 @@ button:hover{opacity:.85}
   </div>
 
   <!-- IRRIGATION SCHEDULE -->
-  <div class="card" id="irrCard">
-    <div class="card-header">
-      <span class="card-title">Irrigation — Hydrawise</span>
-      <span class="badge badge-blue" id="irrBadge">Not connected</span>
-    </div>
-    <div class="irr-key-row">
-      <label>API Key</label>
-      <input type="password" id="hwKey" placeholder="Hydrawise API key">
-    </div>
-    <div style="display:flex;gap:5px;margin-bottom:6px">
-      <button class="btn-blue" onclick="connectHydrawise()" style="font-size:11px;padding:5px 10px;flex:1">Connect</button>
-      <button onclick="clearHydrawiseKey()" style="font-size:10px;background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:7px;padding:5px 8px;cursor:pointer">Clear</button>
-    </div>
+    
     <div class="irr-status" id="irrStatus">
       <span class="irr-dot" id="irrDot"></span>
       <span id="irrControllerName">Enter API key to connect</span>
@@ -478,6 +469,26 @@ button:hover{opacity:.85}
   </div>
 
   <!-- DELIVERY CALENDAR -->
+  <!-- SEASONAL NOTES -->
+  <div class="card span3" id="seasonCard">
+    <div class="card-header">
+      <span class="card-title">Seasonal Notes</span>
+      <span class="badge badge-live" id="seasonBadge">Spring</span>
+    </div>
+    <div class="season-tabs">
+      <div class="season-tab spring active" id="stab-spring" onclick="selectSeason('spring')">🌸 Spring</div>
+      <div class="season-tab summer" id="stab-summer" onclick="selectSeason('summer')">☀️ Summer</div>
+      <div class="season-tab fall" id="stab-fall" onclick="selectSeason('fall')">🍂 Fall</div>
+      <div class="season-tab christmas" id="stab-christmas" onclick="selectSeason('christmas')">🎄 Christmas</div>
+    </div>
+    <div class="season-note-list" id="seasonNoteList"></div>
+    <div class="season-input-row">
+      <input id="seasonInitials" placeholder="Initials" style="width:64px;font-size:13px;flex-shrink:0">
+      <textarea id="seasonNoteInput" placeholder="Add a note for this season…"></textarea>
+      <button class="btn-green" onclick="addSeasonNote()" style="height:52px;white-space:nowrap;padding:0 16px">+ Add</button>
+    </div>
+  </div>
+
   <div class="card span3">
     <div class="card-header">
       <span class="card-title">Calendar Log</span>
@@ -823,9 +834,11 @@ async function connectStation(){
   try{
     const data=await(await fetch(`https://api.ambientweather.net/v1/devices?applicationKey=${app}&apiKey=${api}`)).json();
     if(!Array.isArray(data)||!data.length){st.textContent='⚠ No devices found.';return;}
+    localStorage.setItem('kgAwApi',api);
+    localStorage.setItem('kgAwApp',app);
     applyStation(data[0].lastData);
     const ts=new Date(data[0].lastData.dateutc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-    st.textContent=`✓ Connected · last update ${ts}`;
+    st.textContent=`✓ Connected · last update ${ts} · keys saved`;
     clearInterval(window._stInt);
     window._stInt=setInterval(async()=>{
       try{
@@ -834,6 +847,29 @@ async function connectStation(){
       }catch(e){st.textContent='⚠ Refresh error: '+e.message;}
     },5*60*1000);
   }catch(e){st.textContent='⚠ Error: '+e.message;}
+}
+
+function autoConnectStation(){
+  const api=localStorage.getItem('kgAwApi'),app=localStorage.getItem('kgAwApp');
+  if(!api||!app)return;
+  document.getElementById('awApi').value=api;
+  document.getElementById('awApp').value=app;
+  const st=document.getElementById('stStatus');
+  st.textContent='Auto-connecting…';
+  fetch(`https://api.ambientweather.net/v1/devices?applicationKey=${app}&apiKey=${api}`)
+    .then(r=>r.json()).then(data=>{
+      if(!Array.isArray(data)||!data.length){st.textContent='⚠ No devices found.';return;}
+      applyStation(data[0].lastData);
+      const ts=new Date(data[0].lastData.dateutc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+      st.textContent=`✓ Auto-connected · last update ${ts}`;
+      clearInterval(window._stInt);
+      window._stInt=setInterval(async()=>{
+        try{
+          const d2=await(await fetch(`https://api.ambientweather.net/v1/devices?applicationKey=${app}&apiKey=${api}`)).json();
+          if(Array.isArray(d2)&&d2.length){applyStation(d2[0].lastData);const ts2=new Date(d2[0].lastData.dateutc).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});st.textContent=`✓ Connected · last update ${ts2}`;}
+        }catch(e){}
+      },5*60*1000);
+    }).catch(e=>{st.textContent='⚠ Auto-connect failed: '+e.message;});
 }
 
 function applyStation(d){setStation(d.tempf??null,d.humidity??null,d.windspeedmph??null,d.winddir!=null?deg2dir(d.winddir):null,d.dailyrainin??null)}
@@ -859,7 +895,17 @@ function postMessage(){
   if(!v)return;
   document.getElementById('msgBody').textContent=v;
   document.getElementById('msgInput').value='';
-  document.getElementById('msgTs').textContent='Updated '+new Date().toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+  const ts=new Date().toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+  document.getElementById('msgTs').textContent='Updated '+ts;
+  localStorage.setItem('kgMsg',v);
+  localStorage.setItem('kgMsgTs','Updated '+ts);
+  scheduleSave();
+}
+
+function loadMessage(){
+  const v=localStorage.getItem('kgMsg'),ts=localStorage.getItem('kgMsgTs');
+  if(v){document.getElementById('msgBody').textContent=v;}
+  if(ts){document.getElementById('msgTs').textContent=ts;}
 }
 
 // ── DELIVERY CALENDAR ─────────────────────────────
@@ -1164,10 +1210,15 @@ async function fetchGDD(){
   const badge=document.getElementById('gddBadge'),statusEl=document.getElementById('gddStatus');
   badge.textContent='Loading…';badge.style.background='';badge.style.color='';
   const inp=document.getElementById('gddStartDate');
-  if(!inp.value)inp.value=new Date().getFullYear()+'-01-01';
-  const start=inp.value;
+  const curYear=new Date().getFullYear();
+  if(!inp.value)inp.value=curYear+'-01-01';
+  const start=curYear+'-01-01';
+  inp.value=start;
+  // End date: May 31 or yesterday, whichever is earlier
+  const may31=new Date(curYear+'-05-31');
   const yest=new Date();yest.setDate(yest.getDate()-1);
-  const end=yest.toISOString().slice(0,10);
+  const endDate=yest<may31?yest:may31;
+  const end=endDate.toISOString().slice(0,10);
   const sYear=parseInt(start.slice(0,4)),priorYear=sYear-1;
   const priorStart=priorYear+start.slice(4),priorEnd=priorYear+end.slice(4);
   statusEl.textContent='Fetching from Open-Meteo…';
@@ -1215,97 +1266,6 @@ function renderGDD(){
     </div>`;
   }).join('');
 }
-
-// ── HYDRAWISE IRRIGATION ──────────────────────────
-const HW_BASE='https://api.hydrawise.com/api/v1';
-
-function fmtSec(s){
-  if(!s||isNaN(s))return'—';
-  const m=Math.floor(s/60),sec=s%60;
-  return m>0?m+'m'+(sec>0?' '+sec+'s':''):sec+'s';
-}
-
-async function connectHydrawise(){
-  const key=document.getElementById('hwKey').value.trim();
-  const badge=document.getElementById('irrBadge'),nameEl=document.getElementById('irrControllerName');
-  if(!key){nameEl.textContent='Enter an API key first.';return;}
-  badge.textContent='Connecting…';
-  try{
-    const[custRes,schedRes]=await Promise.all([
-      fetch(`${HW_BASE}/customerdetails.php?api_key=${key}`),
-      fetch(`${HW_BASE}/statusschedule.php?api_key=${key}`)
-    ]);
-    if(!custRes.ok||!schedRes.ok)throw new Error('HTTP '+custRes.status);
-    const cust=await custRes.json(),sched=await schedRes.json();
-    if(cust.error||sched.error)throw new Error(cust.error||sched.error);
-    localStorage.setItem('kgHwKey',key);
-    renderHydrawise(cust,sched);
-    startHydrawiseRefresh(key);
-  }catch(e){
-    badge.textContent='Error';
-    nameEl.textContent=(e.message.includes('Failed to fetch')||e.name==='TypeError')
-      ?'CORS blocked — use the GitHub Pages URL, not a local file.'
-      :'Failed: '+e.message;
-  }
-}
-
-function renderHydrawise(cust,sched){
-  const badge=document.getElementById('irrBadge'),dot=document.getElementById('irrDot');
-  const nameEl=document.getElementById('irrControllerName'),zonesEl=document.getElementById('irrZones');
-  const ctrl=cust.controllers?.[0];
-  const lastContact=ctrl?.last_contact
-    ?new Date(ctrl.last_contact*1000).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}):'—';
-  const isOnline=ctrl?.last_contact&&(Date.now()/1000-ctrl.last_contact)<300;
-  badge.textContent='● Live';badge.style.background='var(--green-pale)';badge.style.color='var(--green)';
-  dot.className='irr-dot'+(isOnline?' online':'');
-  nameEl.textContent=(ctrl?.name||cust.current_controller||'Controller')+' · '+lastContact;
-  const relays=sched.relays||[];
-  if(!relays.length){zonesEl.innerHTML='<div style="font-size:12px;color:var(--text-muted)">No zones found.</div>';return;}
-  zonesEl.innerHTML=relays.map(z=>{
-    const running=z.time===1;
-    const nextText=running?'💧 Running — '+fmtSec(parseInt(z.run))+' left':(z.timestr?'Next: '+z.timestr:'Scheduled');
-    const dur=running?'':' · '+fmtSec(parseInt(z.run));
-    return`<div class="irr-zone${running?' active':''}">
-      <div class="irr-zone-num">${z.relay}</div>
-      <div class="irr-zone-name">${z.name}</div>
-      <div class="irr-zone-next${running?' running':''}">${nextText}${dur}</div>
-    </div>`;
-  }).join('');
-}
-
-function startHydrawiseRefresh(key){
-  clearInterval(window._hwInt);
-  window._hwInt=setInterval(async()=>{
-    try{
-      const[c,s]=await Promise.all([
-        fetch(`${HW_BASE}/customerdetails.php?api_key=${key}`),
-        fetch(`${HW_BASE}/statusschedule.php?api_key=${key}`)
-      ]);
-      renderHydrawise(await c.json(),await s.json());
-    }catch(e){}
-  },5*60*1000);
-}
-
-function autoConnectHydrawise(){
-  const key=localStorage.getItem('kgHwKey');
-  if(!key)return;
-  document.getElementById('hwKey').value=key;
-  connectHydrawise();
-}
-
-function clearHydrawiseKey(){
-  localStorage.removeItem('kgHwKey');
-  document.getElementById('hwKey').value='';
-  document.getElementById('irrBadge').textContent='Not connected';
-  document.getElementById('irrBadge').style.background='';
-  document.getElementById('irrBadge').style.color='';
-  document.getElementById('irrControllerName').textContent='Enter API key to connect';
-  document.getElementById('irrDot').className='irr-dot';
-  document.getElementById('irrZones').innerHTML='<div style="font-size:12px;color:var(--text-muted)">No zones loaded.</div>';
-  clearInterval(window._hwInt);
-}
-
-
 
 // ── REQUEST LIST ──────────────────────────────────
 let reqItems = [];
@@ -1381,6 +1341,69 @@ function loadReqData(){
   try { reqItems = JSON.parse(localStorage.getItem('kgReqData') || '[]'); } catch(e) { reqItems = []; }
 }
 
+
+// ── SEASONAL NOTES ────────────────────────────────
+let seasonData = { spring:[], summer:[], fall:[], christmas:[] };
+let currentSeason = 'spring';
+
+const SEASON_LABELS = { spring:'🌸 Spring', summer:'☀️ Summer', fall:'🍂 Fall', christmas:'🎄 Christmas' };
+
+function selectSeason(season){
+  currentSeason = season;
+  ['spring','summer','fall','christmas'].forEach(s => {
+    const tab = document.getElementById('stab-'+s);
+    tab.className = 'season-tab ' + s + (s === season ? ' active' : '');
+  });
+  document.getElementById('seasonBadge').textContent = SEASON_LABELS[season];
+  renderSeasonNotes();
+}
+
+function addSeasonNote(){
+  const initials = document.getElementById('seasonInitials').value.trim();
+  const body     = document.getElementById('seasonNoteInput').value.trim();
+  if(!body){ document.getElementById('seasonNoteInput').focus(); return; }
+  const ts = new Date().toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+  if(!seasonData[currentSeason]) seasonData[currentSeason] = [];
+  seasonData[currentSeason].push({ initials: initials || '—', body, ts });
+  document.getElementById('seasonNoteInput').value = '';
+  saveSeasonData();
+  renderSeasonNotes();
+}
+
+function deleteSeasonNote(i){
+  seasonData[currentSeason].splice(i, 1);
+  saveSeasonData();
+  renderSeasonNotes();
+}
+
+function renderSeasonNotes(){
+  const el = document.getElementById('seasonNoteList');
+  if(!el) return;
+  const notes = seasonData[currentSeason] || [];
+  if(!notes.length){
+    el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:4px 0">No notes yet for this season.</div>';
+    return;
+  }
+  el.innerHTML = notes.map((n,i) => `
+    <div class="season-note">
+      <div class="season-note-meta">${n.initials} &nbsp;·&nbsp; ${n.ts}</div>
+      <div class="season-note-body">${escHtml(n.body)}</div>
+      <span class="season-note-del" onclick="deleteSeasonNote(${i})" title="Remove">✕</span>
+    </div>`).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function saveSeasonData(){
+  localStorage.setItem('kgSeasonData', JSON.stringify(seasonData));
+  scheduleSave();
+}
+
+function loadSeasonData(){
+  try { seasonData = JSON.parse(localStorage.getItem('kgSeasonData') || '{}'); 
+        ['spring','summer','fall','christmas'].forEach(s=>{ if(!seasonData[s]) seasonData[s]=[]; });
+  } catch(e) { seasonData = { spring:[], summer:[], fall:[], christmas:[] }; }
+}
+
 // ── GITHUB DATA SYNC ──────────────────────────────
 const SYNC_REPO = 'kingsgardens/kings-gardens-dashboard';
 const SYNC_FILE = 'data.json';
@@ -1433,6 +1456,8 @@ async function loadFromGitHub(){
     // Apply todo data
     if(data.todoData) todoData = data.todoData;
     if(data.reqItems) reqItems = data.reqItems;
+    if(data.staffMsg && data.staffMsg.text){ document.getElementById('msgBody').textContent = data.staffMsg.text; document.getElementById('msgTs').textContent = data.staffMsg.ts || ''; }
+    if(data.seasonData){ seasonData = data.seasonData; ['spring','summer','fall','christmas'].forEach(s=>{ if(!seasonData[s]) seasonData[s]=[]; }); renderSeasonNotes(); }
     // Re-render everything
     renderCal();
     if(calSel) renderEvList();
@@ -1451,7 +1476,8 @@ async function saveToGitHub(){
   if(!syncPAT) return;
   syncStatus('Saving…');
   try{
-    const payload = { calEvs, todoData, reqItems };
+    const staffMsg = { text: document.getElementById('msgBody').textContent, ts: document.getElementById('msgTs').textContent };
+    const payload = { calEvs, todoData, reqItems, staffMsg, seasonData };
     const content = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
     const body = { message:'Dashboard data update', content };
     if(syncSHA) body.sha = syncSHA;
@@ -1493,9 +1519,10 @@ function autoConnectSync(){
 // ── INIT ──────────────────────────────────────────
 fetchNWS();
 fetchGDD();
-autoConnectHydrawise();
 renderCal();
 selectDay(fmtKey(new Date()));
+loadSeasonData();
+renderSeasonNotes();
 loadReqData();
 renderReqList();
 initTodo();
