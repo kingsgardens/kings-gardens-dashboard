@@ -94,6 +94,13 @@
         "time": "7-8pm",
         "type": "delivery"
       }
+    ],
+    "2026-09-04": [
+      {
+        "name": "Emerald Green Arborvitae Sale BOGO",
+        "time": "9a",
+        "type": "vendor"
+      }
     ]
   },
   "todoData": {
