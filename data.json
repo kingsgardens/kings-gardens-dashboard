@@ -185,5 +185,15 @@
       }
     ]
   },
-  "reqItems": []
+  "reqItems": [],
+  "staffMsg": {
+    "text": "Lets go Team!!!!",
+    "ts": "Updated Sep 4, 5:02 PM"
+  },
+  "seasonData": {
+    "spring": [],
+    "summer": [],
+    "fall": [],
+    "christmas": []
+  }
 }
