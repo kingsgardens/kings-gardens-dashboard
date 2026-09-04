@@ -163,6 +163,12 @@
         "text": "Fall projects - painting pots, making bows, fall display items (bamboo teepees, etc), put up pumpkin house",
         "done": true
       }
+    ],
+    "2026-09": [
+      {
+        "text": "All fall decor set and ready by Sept 1!",
+        "done": false
+      }
     ]
   },
   "reqItems": []
