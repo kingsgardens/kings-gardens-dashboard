@@ -101,6 +101,13 @@
         "time": "9a",
         "type": "vendor"
       }
+    ],
+    "2026-09-01": [
+      {
+        "name": "EG ARB, Monrovia, BOGO $120",
+        "time": "9a",
+        "type": "misc"
+      }
     ]
   },
   "todoData": {
