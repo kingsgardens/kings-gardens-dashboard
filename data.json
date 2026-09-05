@@ -200,7 +200,13 @@
   },
   "seasonData": {
     "spring": [],
-    "summer": [],
+    "summer": [
+      {
+        "initials": "BD",
+        "body": "Planting tickets: \nmajority of planting tickets seem to have gone well, a few callbacks for planting depth and concerns. definitely more people needing trees staked then usual it felt like. \nTropicals- \nThey seemed to move pretty well, with lots of positive feedback about that fill a cart sale. \nHanging baskets moved decently quickly at first then slowed way down in my opinion. \n-Powdery mildew in the perennial house at times. \n- ran out of burlap for wrapping trees. \n-felt like I was spraying for aphids almost every week on the tropicals\n-welded pots have been a good addition",
+        "ts": "Sep 5, 2026, 3:28 PM"
+      }
+    ],
     "fall": [],
     "christmas": []
   }
