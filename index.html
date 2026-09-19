@@ -236,6 +236,20 @@ button:hover{opacity:.85}
 .req-dot-general{background:var(--green-mid)}
 .req-dot-customer{background:var(--amber)}
 
+/* MACHINE MAINTENANCE */
+.maint-tabs{display:flex;gap:3px;margin-bottom:10px;flex-wrap:wrap}
+.maint-tab{font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text-muted);transition:all .15s;letter-spacing:.3px}
+.maint-tab.active{border-color:var(--blue);background:var(--blue-pale);color:var(--blue)}
+.maint-tab:hover:not(.active){background:var(--green-pale);color:var(--green)}
+.maint-tab.has-log::after{content:"·";margin-left:3px;color:var(--green-mid)}
+.maint-log-list{display:flex;flex-direction:column;gap:5px;max-height:200px;overflow-y:auto;margin-bottom:10px}
+.maint-log-item{background:var(--surface);border-radius:8px;padding:7px 10px;font-size:12px;position:relative}
+.maint-log-item:hover .maint-log-del{opacity:1}
+.maint-log-meta{font-size:10px;color:var(--text-muted);font-weight:600;margin-bottom:2px}
+.maint-log-body{color:var(--text);line-height:1.45}
+.maint-log-del{position:absolute;top:6px;right:8px;cursor:pointer;color:var(--text-muted);font-size:12px;opacity:0;transition:opacity .15s}
+.maint-log-del:hover{color:var(--red)}
+
 /* SEASONAL NOTES */
 .season-tabs{display:flex;gap:4px;margin-bottom:12px}
 .season-tab{flex:1;text-align:center;padding:7px 0;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;border-radius:8px;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text-muted);transition:all .15s}
@@ -251,6 +265,16 @@ button:hover{opacity:.85}
 .season-note-body{color:var(--text)}
 .season-note-del{position:absolute;top:7px;right:8px;cursor:pointer;color:var(--text-muted);font-size:12px;opacity:0;transition:opacity .15s}
 .season-note-del:hover{color:var(--red)}
+.season-note{cursor:pointer}
+.season-note:hover{background:var(--green-pale)}
+
+/* NOTE MODAL */
+.note-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:flex;align-items:center;justify-content:center;padding:24px}
+.note-modal{background:var(--white);border-radius:16px;padding:28px 32px;max-width:640px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.18);position:relative}
+.note-modal-meta{font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:12px}
+.note-modal-body{font-size:15px;color:var(--text);line-height:1.75;white-space:pre-wrap}
+.note-modal-close{position:absolute;top:16px;right:18px;font-size:20px;cursor:pointer;color:var(--text-muted);background:none;border:none;line-height:1;padding:0}
+.note-modal-close:hover{color:var(--text)}
 .season-input-row{display:flex;gap:6px;align-items:flex-end}
 .season-input-row textarea{flex:1;min-height:52px;resize:none;font-size:13px}
 
@@ -469,6 +493,27 @@ button:hover{opacity:.85}
   </div>
 
   <!-- DELIVERY CALENDAR -->
+  <!-- MACHINE MAINTENANCE -->
+  <div class="card span3" id="maintCard">
+    <div class="card-header">
+      <span class="card-title">Machine Maintenance</span>
+      <span class="badge badge-blue" id="maintBadge">Select a machine</span>
+    </div>
+    <div class="maint-tabs" id="maintTabs"></div>
+    <div class="maint-log-list" id="maintLogList"><div style="font-size:12px;color:var(--text-muted);font-style:italic">Select a machine above to view its log.</div></div>
+    <div style="display:flex;gap:6px;align-items:flex-end;border-top:1px solid var(--border);padding-top:10px">
+      <input id="maintInitials" placeholder="Initials" style="width:64px;font-size:12px;padding:5px 8px;flex-shrink:0">
+      <textarea id="maintNoteInput" placeholder="Describe work performed…" style="flex:1;min-height:48px;resize:none;font-size:13px"></textarea>
+      <button class="btn-blue" onclick="addMaintLog()" style="height:48px;white-space:nowrap;padding:0 14px">+ Log</button>
+    </div>
+    <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      <span style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px">Machines:</span>
+      <input id="maintNewMachine" placeholder="Add machine name" style="font-size:12px;padding:4px 8px;flex:1;min-width:140px">
+      <button onclick="addMaintMachine()" class="btn-ghost" style="font-size:11px;padding:4px 12px">+ Add Machine</button>
+      <button onclick="deleteMaintMachine()" style="font-size:11px;padding:4px 10px;background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:7px;cursor:pointer">Remove Current</button>
+    </div>
+  </div>
+
   <!-- SEASONAL NOTES -->
   <div class="card span3" id="seasonCard">
     <div class="card-header">
@@ -1212,13 +1257,9 @@ async function fetchGDD(){
   const inp=document.getElementById('gddStartDate');
   const curYear=new Date().getFullYear();
   if(!inp.value)inp.value=curYear+'-01-01';
-  const start=curYear+'-01-01';
-  inp.value=start;
-  // End date: May 31 or yesterday, whichever is earlier
-  const may31=new Date(curYear+'-05-31');
+  const start=inp.value;
   const yest=new Date();yest.setDate(yest.getDate()-1);
-  const endDate=yest<may31?yest:may31;
-  const end=endDate.toISOString().slice(0,10);
+  const end=yest.toISOString().slice(0,10);
   const sYear=parseInt(start.slice(0,4)),priorYear=sYear-1;
   const priorStart=priorYear+start.slice(4),priorEnd=priorYear+end.slice(4);
   statusEl.textContent='Fetching from Open-Meteo…';
@@ -1385,10 +1426,10 @@ function renderSeasonNotes(){
     return;
   }
   el.innerHTML = notes.map((n,i) => `
-    <div class="season-note">
+    <div class="season-note" onclick="openNoteModal(${i})">
       <div class="season-note-meta">${n.initials} &nbsp;·&nbsp; ${n.ts}</div>
       <div class="season-note-body">${escHtml(n.body)}</div>
-      <span class="season-note-del" onclick="deleteSeasonNote(${i})" title="Remove">✕</span>
+      <span class="season-note-del" onclick="event.stopPropagation();deleteSeasonNote(${i})" title="Remove">✕</span>
     </div>`).join('');
   el.scrollTop = el.scrollHeight;
 }
@@ -1402,6 +1443,125 @@ function loadSeasonData(){
   try { seasonData = JSON.parse(localStorage.getItem('kgSeasonData') || '{}'); 
         ['spring','summer','fall','christmas'].forEach(s=>{ if(!seasonData[s]) seasonData[s]=[]; });
   } catch(e) { seasonData = { spring:[], summer:[], fall:[], christmas:[] }; }
+}
+
+
+// ── MACHINE MAINTENANCE ───────────────────────────
+let maintData = { machines: [], logs: {} };
+let currentMachine = null;
+
+function renderMaintTabs(){
+  const tabs = document.getElementById('maintTabs');
+  if(!tabs) return;
+  if(!maintData.machines.length){
+    tabs.innerHTML = '<span style="font-size:12px;color:var(--text-muted);font-style:italic">No machines added yet — add one below.</span>';
+    return;
+  }
+  tabs.innerHTML = maintData.machines.map(m => {
+    const hasLog = (maintData.logs[m] || []).length > 0;
+    const active = m === currentMachine ? ' active' : '';
+    const dot    = hasLog ? ' has-log' : '';
+    return `<div class="maint-tab${active}${dot}" onclick="selectMachine('${escHtml(m)}')">${escHtml(m)}</div>`;
+  }).join('');
+}
+
+function selectMachine(name){
+  currentMachine = name;
+  document.getElementById('maintBadge').textContent = name;
+  renderMaintTabs();
+  renderMaintLog();
+}
+
+function renderMaintLog(){
+  const el = document.getElementById('maintLogList');
+  if(!el) return;
+  if(!currentMachine){ el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);font-style:italic">Select a machine above.</div>'; return; }
+  const logs = maintData.logs[currentMachine] || [];
+  if(!logs.length){ el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);font-style:italic">No maintenance logged for this machine yet.</div>'; return; }
+  el.innerHTML = [...logs].reverse().map((log, ri) => {
+    const i = logs.length - 1 - ri;
+    return `<div class="maint-log-item">
+      <div class="maint-log-meta">${log.initials} &nbsp;·&nbsp; ${log.ts}</div>
+      <div class="maint-log-body">${escHtml(log.body)}</div>
+      <span class="maint-log-del" onclick="deleteMaintLog(${i})" title="Remove">✕</span>
+    </div>`;
+  }).join('');
+}
+
+function addMaintLog(){
+  if(!currentMachine){ alert('Select a machine first.'); return; }
+  const initials = document.getElementById('maintInitials').value.trim();
+  const body     = document.getElementById('maintNoteInput').value.trim();
+  if(!body){ document.getElementById('maintNoteInput').focus(); return; }
+  const ts = new Date().toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+  if(!maintData.logs[currentMachine]) maintData.logs[currentMachine] = [];
+  maintData.logs[currentMachine].push({ initials: initials || '—', body, ts });
+  document.getElementById('maintNoteInput').value = '';
+  saveMaintData();
+  renderMaintTabs();
+  renderMaintLog();
+}
+
+function deleteMaintLog(i){
+  if(!currentMachine) return;
+  maintData.logs[currentMachine].splice(i, 1);
+  saveMaintData();
+  renderMaintTabs();
+  renderMaintLog();
+}
+
+function addMaintMachine(){
+  const inp  = document.getElementById('maintNewMachine');
+  const name = inp.value.trim();
+  if(!name) return;
+  if(maintData.machines.includes(name)){ inp.value=''; return; }
+  maintData.machines.push(name);
+  inp.value = '';
+  saveMaintData();
+  renderMaintTabs();
+  if(!currentMachine) selectMachine(name);
+}
+
+function deleteMaintMachine(){
+  if(!currentMachine) return;
+  if(!confirm('Remove "'+currentMachine+'" and all its log entries?')) return;
+  maintData.machines = maintData.machines.filter(m => m !== currentMachine);
+  delete maintData.logs[currentMachine];
+  currentMachine = maintData.machines[0] || null;
+  saveMaintData();
+  renderMaintTabs();
+  if(currentMachine) selectMachine(currentMachine);
+  else { document.getElementById('maintBadge').textContent = 'Select a machine'; renderMaintLog(); }
+}
+
+function saveMaintData(){
+  localStorage.setItem('kgMaintData', JSON.stringify(maintData));
+  scheduleSave();
+}
+
+function loadMaintData(){
+  try {
+    const d = JSON.parse(localStorage.getItem('kgMaintData') || '{}');
+    maintData = { machines: d.machines || [], logs: d.logs || {} };
+  } catch(e) { maintData = { machines: [], logs: {} }; }
+}
+
+
+// ── NOTE MODAL ────────────────────────────────────
+function openNoteModal(i){
+  const notes = seasonData[currentSeason] || [];
+  const n = notes[i];
+  if(!n) return;
+  document.getElementById('noteModalMeta').textContent = n.initials + '  ·  ' + n.ts + '  ·  ' + SEASON_LABELS[currentSeason];
+  document.getElementById('noteModalBody').textContent = n.body;
+  document.getElementById('noteModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeNoteModal(e){
+  if(e && e.target !== document.getElementById('noteModal')) return;
+  document.getElementById('noteModal').style.display = 'none';
+  document.body.style.overflow = '';
 }
 
 // ── GITHUB DATA SYNC ──────────────────────────────
@@ -1457,6 +1617,7 @@ async function loadFromGitHub(){
     if(data.todoData) todoData = data.todoData;
     if(data.reqItems) reqItems = data.reqItems;
     if(data.staffMsg && data.staffMsg.text){ document.getElementById('msgBody').textContent = data.staffMsg.text; document.getElementById('msgTs').textContent = data.staffMsg.ts || ''; }
+    if(data.maintData){ maintData = { machines: data.maintData.machines||[], logs: data.maintData.logs||{} }; renderMaintTabs(); if(currentMachine) renderMaintLog(); }
     if(data.seasonData){ seasonData = data.seasonData; ['spring','summer','fall','christmas'].forEach(s=>{ if(!seasonData[s]) seasonData[s]=[]; }); renderSeasonNotes(); }
     // Re-render everything
     renderCal();
@@ -1477,7 +1638,7 @@ async function saveToGitHub(){
   syncStatus('Saving…');
   try{
     const staffMsg = { text: document.getElementById('msgBody').textContent, ts: document.getElementById('msgTs').textContent };
-    const payload = { calEvs, todoData, reqItems, staffMsg, seasonData };
+    const payload = { calEvs, todoData, reqItems, staffMsg, seasonData, maintData };
     const content = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
     const body = { message:'Dashboard data update', content };
     if(syncSHA) body.sha = syncSHA;
@@ -1518,9 +1679,18 @@ function autoConnectSync(){
 
 // ── INIT ──────────────────────────────────────────
 fetchNWS();
+// Hide GDD card after May 31
+(function(){
+  const now = new Date();
+  const pastMay31 = now.getMonth() > 4; // June=5 or later
+  const card = document.getElementById('gddCard');
+  if(card) card.style.display = pastMay31 ? 'none' : '';
+})();
 fetchGDD();
 renderCal();
 selectDay(fmtKey(new Date()));
+loadMaintData();
+renderMaintTabs();
 loadSeasonData();
 renderSeasonNotes();
 loadReqData();
@@ -1531,5 +1701,15 @@ autoConnectSync();
 setInterval(fetchNWS,15*60*1000);
 setInterval(fetchGDD,60*60*1000);
 </script>
+
+<!-- NOTE MODAL -->
+<div class="note-modal-overlay" id="noteModal" style="display:none" onclick="closeNoteModal(event)">
+  <div class="note-modal">
+    <button class="note-modal-close" onclick="closeNoteModal()">&times;</button>
+    <div class="note-modal-meta" id="noteModalMeta"></div>
+    <div class="note-modal-body" id="noteModalBody"></div>
+  </div>
+</div>
+
 </body>
 </html>
