@@ -287,7 +287,8 @@
   "maintData": {
     "machines": [
       "Older Kubota Mini Skid",
-      "Newer Kubota Mini Skid"
+      "Newer Kubota Mini Skid",
+      "Case Skid Loader"
     ],
     "logs": {}
   }
