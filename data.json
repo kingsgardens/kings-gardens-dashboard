@@ -291,6 +291,14 @@
       "Case Skid Loader",
       "Bobcat S76"
     ],
-    "logs": {}
+    "logs": {
+      "Older Kubota Mini Skid": [
+        {
+          "initials": "WK",
+          "body": "Fan belt tighten, oil change, new fuel filter. Done by Central Equipment.",
+          "ts": "Sep 21, 2026, 10:25 AM"
+        }
+      ]
+    }
   }
 }
