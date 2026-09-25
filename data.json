@@ -215,6 +215,11 @@
         "name": "Jonathan Shell - 4 pumpkin bins",
         "time": "2p",
         "type": "delivery"
+      },
+      {
+        "name": "Semco Stone - 8 pallets to Southland, 5 to shop",
+        "time": "12p",
+        "type": "delivery"
       }
     ]
   },
