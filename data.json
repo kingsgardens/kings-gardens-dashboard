@@ -227,6 +227,11 @@
         "name": "Bettingers - 7 racks - pansy, mum, celosia, AM",
         "time": "9a",
         "type": "delivery"
+      },
+      {
+        "name": "Willoway - small load",
+        "time": "12p",
+        "type": "delivery"
       }
     ]
   },
