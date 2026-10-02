@@ -262,6 +262,13 @@
         "time": "10a",
         "type": "delivery"
       }
+    ],
+    "2026-10-02": [
+      {
+        "name": "Natorps - 6 racks",
+        "time": "9a",
+        "type": "delivery"
+      }
     ]
   },
   "todoData": {
