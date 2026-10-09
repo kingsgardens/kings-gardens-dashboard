@@ -299,6 +299,11 @@
         "name": "Tammy - last little load, partial truck",
         "time": "9a",
         "type": "delivery"
+      },
+      {
+        "name": "Wenke - 2 racks",
+        "time": "2p",
+        "type": "delivery"
       }
     ]
   },
