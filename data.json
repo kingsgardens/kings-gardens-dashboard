@@ -293,6 +293,13 @@
         "time": "8a",
         "type": "delivery"
       }
+    ],
+    "2026-10-08": [
+      {
+        "name": "Tammy - last little load, partial truck",
+        "time": "9a",
+        "type": "delivery"
+      }
     ]
   },
   "todoData": {
