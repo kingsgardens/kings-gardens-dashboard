@@ -312,6 +312,13 @@
         "time": "1p",
         "type": "delivery"
       }
+    ],
+    "2026-10-16": [
+      {
+        "name": "Willoway",
+        "time": "9a",
+        "type": "delivery"
+      }
     ]
   },
   "todoData": {
