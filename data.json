@@ -334,6 +334,13 @@
         "time": "10a",
         "type": "delivery"
       }
+    ],
+    "2026-10-21": [
+      {
+        "name": "$5 on stackers, cushaw - $20 on giants - jacks regular price",
+        "time": "9a",
+        "type": "misc"
+      }
     ]
   },
   "todoData": {
