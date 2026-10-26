@@ -262,7 +262,7 @@ button:hover{opacity:.85}
 .season-note{background:var(--surface);border-radius:8px;padding:8px 11px;font-size:13px;line-height:1.5;position:relative}
 .season-note:hover .season-note-del{opacity:1}
 .season-note-meta{font-size:10px;color:var(--text-muted);margin-bottom:3px;font-weight:600}
-.season-note-body{color:var(--text)}
+.season-note-body{color:var(--text);white-space:pre-wrap}
 .season-note-del{position:absolute;top:7px;right:8px;cursor:pointer;color:var(--text-muted);font-size:12px;opacity:0;transition:opacity .15s}
 .season-note-del:hover{color:var(--red)}
 .season-note{cursor:pointer}
@@ -1610,7 +1610,7 @@ async function loadFromGitHub(){
     if(!res.ok) throw new Error('HTTP '+res.status);
     const meta = await res.json();
     syncSHA = meta.sha;
-    const data = JSON.parse(atob(meta.content.split('\n').join('')));
+    const data = JSON.parse(decodeURIComponent(escape(atob(meta.content.split('\n').join('')))));
     // Apply calendar events
     if(data.calEvs) calEvs = data.calEvs;
     // Apply todo data
