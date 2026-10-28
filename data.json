@@ -353,6 +353,13 @@
         "time": "10a",
         "type": "delivery"
       }
+    ],
+    "2026-10-27": [
+      {
+        "name": "Plant trees now - we have a tree mendous selection",
+        "time": "9a",
+        "type": "vendor"
+      }
     ]
   },
   "todoData": {
