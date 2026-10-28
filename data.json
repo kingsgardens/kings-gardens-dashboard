@@ -414,11 +414,11 @@
       },
       {
         "text": "Are all Christmas things set?",
-        "done": false
+        "done": true
       },
       {
         "text": "Order netting, stands, tips, etc. Check all Christmas supplies",
-        "done": false
+        "done": true
       }
     ],
     "2026-11": [
