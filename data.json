@@ -388,6 +388,13 @@
         "time": "10a",
         "type": "delivery"
       }
+    ],
+    "2026-11-12": [
+      {
+        "name": "Willoway - 6 racks",
+        "time": "10a",
+        "type": "delivery"
+      }
     ]
   },
   "todoData": {
