@@ -408,6 +408,11 @@
         "name": "M and M Wintergreens - 4 pallets",
         "time": "10a",
         "type": "delivery"
+      },
+      {
+        "name": "Perennial Sale - 0-200 20% off, 201-400, 30% off, 401+ 40% off",
+        "time": "9a",
+        "type": "misc"
       }
     ]
   },
