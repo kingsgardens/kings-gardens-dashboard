@@ -500,6 +500,12 @@
         "text": "Blow out irrigation - shrub zones(4 parking lot, 2 front beds, 1 gravel lot, sold section/tree line upper shut offs), greenhouse (injector off), backflow off",
         "done": false
       }
+    ],
+    "2026-12": [
+      {
+        "text": "Change all batteries - back door, gate, temp sensors, etc.",
+        "done": false
+      }
     ]
   },
   "reqItems": [],
