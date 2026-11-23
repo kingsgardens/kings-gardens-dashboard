@@ -240,6 +240,29 @@ button:hover{opacity:.85}
 .kgo .note{font-size:11.5px;color:var(--text-muted);max-width:70ch;margin:0;line-height:1.6}
 .kgo .note b{color:var(--text-mid)}
 
+/* MARQUEE REMINDER CARD */
+.mq-card{grid-column:span 3;border-radius:14px;overflow:hidden;background:#1a3a5c;border:2.5px solid #2e6ea6}
+.mq-top{background:#2e6ea6;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.mq-top-left{display:flex;align-items:center;gap:14px}
+.mq-icon{font-size:34px;line-height:1;flex-shrink:0}
+.mq-headline{font-size:20px;font-weight:700;color:#fff;letter-spacing:.3px}
+.mq-sub{font-size:12px;color:rgba(255,255,255,.65);margin-top:3px}
+.mq-body{padding:16px 22px 18px}
+.mq-divider{height:1px;background:rgba(255,255,255,.12);margin-bottom:14px}
+.mq-suggest{font-size:12px;color:rgba(255,255,255,.55);margin-bottom:10px;line-height:1.6}
+.mq-suggest b{color:rgba(255,255,255,.85)}
+.mq-input-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.mq-input-row input{flex:1;min-width:220px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:8px 12px;font-size:13px;font-family:var(--font)}
+.mq-input-row input::placeholder{color:rgba(255,255,255,.4)}
+.mq-input-row input:focus{outline:none;border-color:rgba(255,255,255,.55)}
+.mq-btn-yes{background:#2d9e6b;color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.mq-btn-yes:hover{opacity:.88}
+.mq-btn-dismiss{background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+.mq-btn-dismiss:hover{opacity:.8}
+.mq-past{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.mq-past-tag{background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);border-radius:20px;padding:3px 11px;font-size:11px;cursor:pointer;border:1px solid rgba(255,255,255,.18)}
+.mq-past-tag:hover{background:rgba(255,255,255,.2)}
+
 /* FOOTER */
 .footer{text-align:center;font-size:11px;color:var(--text-muted);padding:8px 0 20px}
 .footer a{color:var(--green-mid);text-decoration:none}
@@ -338,6 +361,9 @@ button:hover{opacity:.85}
 
   <!-- ALERT SLOT: big red card injected here by JS when NWS issues frost/freeze -->
   <div id="alertSlot" style="display:contents"></div>
+
+  <!-- MARQUEE REMINDER SLOT -->
+  <div id="marqueeSlot" style="display:contents"></div>
 
   <!-- GREENHOUSE SLOT: big yellow card injected when temp <45, severe storms, or wind gusts >45mph -->
   <div id="ghSlot" style="display:contents"></div>
@@ -668,18 +694,22 @@ async function fetchNWS(){
     const days5=periods.filter(p=>p.isDaytime).slice(0,5);
 
     // ── ALERT DETECTION ──────────────────────
+    // Only show frost/freeze alerts March 1 – November 30
+    const _now=new Date(),_mo=_now.getMonth()+1; // 1=Jan…12=Dec
+    const inFrostSeason=(_mo>=3&&_mo<=11);
+
     const frostAlerts=(al.features||[]).filter(f=>{
       const ev=(f.properties?.event||'').toLowerCase();
       return ev.includes('frost')||ev.includes('freeze');
     });
 
-    if(frostAlerts.length>0){
+    if(inFrostSeason&&frostAlerts.length>0){
       // Real NWS frost/freeze alert — use the actual text
       const p=frostAlerts[0].properties;
       let exp='';
       try{if(p.expires)exp=new Date(p.expires).toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'});}catch(e){}
       showAlert({name:p.event,lo,headline:p.headline||p.event,desc:p.description||'',exp});
-    } else if(lo<=36){
+    } else if(inFrostSeason&&lo<=36){
       // No formal alert but low is dangerous
       const name=lo<=28?'Hard Freeze Warning':lo<=32?'Freeze Warning':'Frost Advisory';
       const desc=lo<=32
@@ -994,6 +1024,128 @@ function loadMessage(){
 
 // ── DELIVERY CALENDAR ─────────────────────────────
 let calView=new Date(),calSel=null,calEvs={};
+
+// ── MARQUEE REMINDER ──────────────────────────────
+// marqueeData: { entries:[{text,date}], lastChanged, dismissed } stored in GitHub sync
+let marqueeData = { entries:[], lastChanged:null, dismissed:null };
+const MQ_INTERVAL_DAYS = 14;
+const MQ_SNOOZE_DAYS   = 7;
+
+function mqSeason(mo){ // mo: 1-12
+  if(mo>=3&&mo<=5)  return 'spring';
+  if(mo>=6&&mo<=8)  return 'summer';
+  if(mo>=9&&mo<=11) return 'fall';
+  return 'winter';
+}
+
+function mqSuggestions(){
+  // Find past marquee entries from the same season
+  const mo = new Date().getMonth()+1;
+  const season = mqSeason(mo);
+  const past = (marqueeData.entries||[]).filter(e=>{
+    if(!e.date) return false;
+    const em = parseInt(e.date.slice(5,7));
+    return mqSeason(em)===season;
+  });
+  // Deduplicate by text, most recent first
+  const seen = new Set(), out = [];
+  for(let i=past.length-1;i>=0;i--){
+    const t = (past[i].text||'').trim();
+    if(t && !seen.has(t.toLowerCase())){ seen.add(t.toLowerCase()); out.push(t); }
+    if(out.length>=4) break;
+  }
+  return out;
+}
+
+function checkMarqueeReminder(){
+  const slot = document.getElementById('marqueeSlot');
+  if(!slot) return;
+  const lastChanged = marqueeData.lastChanged || null;
+  const dismissed   = marqueeData.dismissed   || null;
+  const today = new Date().toISOString().slice(0,10);
+
+  // Check snooze
+  if(dismissed && dismissed >= today){ slot.innerHTML=''; return; }
+
+  // Check interval
+  if(lastChanged){
+    const diff = (new Date(today) - new Date(lastChanged)) / 864e5;
+    if(diff < MQ_INTERVAL_DAYS){ slot.innerHTML=''; return; }
+  }
+
+  // Show reminder
+  const suggs = mqSuggestions();
+  const suggestLine = suggs.length
+    ? `<div class="mq-suggest">Past ${mqSeason(new Date().getMonth()+1)} messages: <b>${suggs[0]}</b>${suggs.length>1?' and others':''}</div>`
+    : '<div class="mq-suggest">No past messages for this season yet.</div>';
+  const pastTags = suggs.map(s=>`<span class="mq-past-tag" onclick="mqFill(this)">${s}</span>`).join('');
+
+  const daysSince = lastChanged
+    ? Math.round((new Date(today)-new Date(lastChanged))/864e5)
+    : null;
+  const sinceText = daysSince!=null ? `Last changed ${daysSince} days ago` : 'No marquee change recorded';
+
+  slot.innerHTML = `
+    <div class="mq-card">
+      <div class="mq-top">
+        <div class="mq-top-left">
+          <div class="mq-icon">🪧</div>
+          <div>
+            <div class="mq-headline">Time to Change the Marquee?</div>
+            <div class="mq-sub">${sinceText} &nbsp;·&nbsp; Reminder fires every ${MQ_INTERVAL_DAYS} days</div>
+          </div>
+        </div>
+      </div>
+      <div class="mq-body">
+        <div class="mq-divider"></div>
+        ${suggestLine}
+        <div class="mq-input-row">
+          <input id="mqInput" placeholder="What goes on the marquee?" />
+          <button class="mq-btn-yes" onclick="mqConfirm()">✓ Update &amp; Add to Calendar</button>
+          <button class="mq-btn-dismiss" onclick="mqDismiss()">Remind me in ${MQ_SNOOZE_DAYS} days</button>
+        </div>
+        ${pastTags ? `<div class="mq-past">${pastTags}</div>` : ''}
+      </div>
+    </div>`;
+}
+
+function mqFill(el){
+  const inp = document.getElementById('mqInput');
+  if(inp) inp.value = el.textContent;
+  inp.focus();
+}
+
+function mqConfirm(){
+  const inp = document.getElementById('mqInput');
+  const text = inp ? inp.value.trim() : '';
+  if(!text){ if(inp) inp.focus(); return; }
+
+  const today = new Date().toISOString().slice(0,10);
+  // Save to marquee history
+  if(!marqueeData.entries) marqueeData.entries=[];
+  marqueeData.entries.push({ text, date: today });
+  marqueeData.lastChanged = today;
+  marqueeData.dismissed   = null;
+
+  // Add to delivery calendar as a marquee event
+  if(!calEvs[today]) calEvs[today]=[];
+  calEvs[today].push({ name:'🪧 Marquee: '+text, time:'', type:'misc' });
+  renderCal();
+  if(calSel===today) renderEvList();
+  renderCalSummary();
+  scheduleSave();
+
+  // Clear the slot
+  document.getElementById('marqueeSlot').innerHTML='';
+}
+
+function mqDismiss(){
+  const snoozeUntil = new Date();
+  snoozeUntil.setDate(snoozeUntil.getDate()+MQ_SNOOZE_DAYS);
+  marqueeData.dismissed = snoozeUntil.toISOString().slice(0,10);
+  scheduleSave();
+  document.getElementById('marqueeSlot').innerHTML='';
+}
 function fmtKey(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function changeMonth(dir){calView=new Date(calView.getFullYear(),calView.getMonth()+dir,1);renderCal()}
 function selectDay(k){calSel=k;renderCal();const d=new Date(k+'T12:00:00');document.getElementById('calDateLbl').textContent=d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});renderEvList()}
@@ -1658,6 +1810,15 @@ async function loadFromGitHub(){
     if(data.staffMsg && data.staffMsg.text){ document.getElementById('msgBody').textContent = data.staffMsg.text; document.getElementById('msgTs').textContent = data.staffMsg.ts || ''; }
     if(data.maintData){ maintData = { machines: data.maintData.machines||[], logs: data.maintData.logs||{} }; renderMaintTabs(); if(currentMachine) renderMaintLog(); }
     if(data.seasonData){ seasonData = data.seasonData; ['spring','summer','fall','christmas'].forEach(s=>{ if(!seasonData[s]) seasonData[s]=[]; }); renderSeasonNotes(); }
+    if(data.marqueeData){
+      // Support both old array format and new object format
+      if(Array.isArray(data.marqueeData)){
+        marqueeData.entries = data.marqueeData;
+      } else {
+        marqueeData = { entries:[], lastChanged:null, dismissed:null, ...data.marqueeData };
+      }
+    }
+    checkMarqueeReminder();
     // Re-render everything
     renderCal();
     if(calSel) renderEvList();
@@ -1677,7 +1838,7 @@ async function saveToGitHub(){
   syncStatus('Saving…');
   try{
     const staffMsg = { text: document.getElementById('msgBody').textContent, ts: document.getElementById('msgTs').textContent };
-    const payload = { calEvs, todoData, reqItems, staffMsg, seasonData, maintData };
+    const payload = { calEvs, todoData, reqItems, staffMsg, seasonData, maintData, marqueeData };
     const content = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
     const body = { message:'Dashboard data update', content };
     if(syncSHA) body.sha = syncSHA;
@@ -1800,6 +1961,7 @@ kgoLive().then(function(r){kgoRender(r,true);}).catch(function(){kgoRender(kgoSa
 })();
 
 // ── INIT ──────────────────────────────────────────
+checkMarqueeReminder();
 fetchNWS();
 // Hide GDD card after May 31
 (function(){
