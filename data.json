@@ -420,6 +420,13 @@
         "time": "10a",
         "type": "delivery"
       }
+    ],
+    "2026-11-23": [
+      {
+        "name": "🪧 Marquee: Christmas is here Our Market is in full swing",
+        "time": "",
+        "type": "misc"
+      }
     ]
   },
   "todoData": {
@@ -614,5 +621,15 @@
         }
       ]
     }
+  },
+  "marqueeData": {
+    "entries": [
+      {
+        "text": "Christmas is here Our Market is in full swing",
+        "date": "2026-11-23"
+      }
+    ],
+    "lastChanged": "2026-11-23",
+    "dismissed": null
   }
 }
